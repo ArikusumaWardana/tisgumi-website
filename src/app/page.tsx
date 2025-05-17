@@ -1,9 +1,23 @@
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import AboutUsSection from "@/components/AboutUsSection";
+import FeaturesSection from "@/components/FeaturesSection";
+import WorkingHoursSection from "@/components/WorkingHoursSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import MenuSection from "@/components/MenuSection";
+import Footer from "@/components/Footer";
+
 export default function Home() {
   return (
-    <div>
-      <h1>Hello World</h1>
-      <h2>Hello World</h2>
-      <h3>Hello World</h3>
-    </div>    
+    <div className="relative min-h-screen bg-[#0A1316]">
+      <Navbar />
+      <HeroSection />
+      <AboutUsSection />
+      <FeaturesSection />
+      <WorkingHoursSection />
+      <TestimonialsSection />
+      <MenuSection />
+      <Footer />
+    </div>
   );
 }
