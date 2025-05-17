@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+
 import {
   Facebook,
   Twitter,
@@ -47,7 +49,7 @@ export default function Footer() {
           </p>
           <div className="flex gap-4 mt-2">
             {socialLinks.map(({ icon: Icon, href }, i) => (
-              <a
+              <Link
                 key={i}
                 href={href}
                 className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#8e8e4b] text-xl hover:bg-[#8e8e4b] hover:text-white transition"
@@ -55,7 +57,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
               >
                 <Icon size={26} />
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -76,13 +78,13 @@ export default function Footer() {
         <div className="flex flex-col gap-2">
           <span className="text-lg font-bold mb-2 font-poppins">User Link</span>
           {userLinks.map((link, i) => (
-            <a
+            <Link
               key={i}
               href={link.href}
-              className="text-white/70 text-sm hover:text-[#d18b47] transition"
+              className="text-white/70 text-sm hover:text-[#8e8e4b] transition"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </div>
         {/* Contact Us & Subscribe */}
@@ -110,12 +112,12 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-[#222] flex flex-col md:flex-row items-center justify-between gap-4 text-white/60 text-sm">
         <span>©2024 TISGUMI, All right reserved</span>
         <div className="flex gap-6">
-          <a href="#" className="hover:text-[#8e8e4b] transition">
+          <Link href="#" className="hover:text-[#8e8e4b] transition">
             Privacy Policy
-          </a>
-          <a href="#" className="hover:text-[#8e8e4b] transition">
+          </Link>
+          <Link href="#" className="hover:text-[#8e8e4b] transition">
             Terms of Use
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

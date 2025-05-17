@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -43,12 +44,12 @@ export default function Navbar() {
       <ul className="hidden md:flex gap-8 items-center">
         {navLinks.map((link) => (
           <li key={link.name}>
-            <a
+            <Link
               href={link.href}
               className="text-white text-lg font-md transition-colors border-b-2 border-transparent hover:border-[#decb94] px-2 py-1 font-poppins"
             >
               {link.name}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
