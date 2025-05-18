@@ -1,21 +1,21 @@
-import { Utensils, Coffee, UserCheck } from "lucide-react";
+import { Utensils, Leaf, Gift } from "lucide-react";
 import SubtitleWithLine  from "./ui/subtitleWithLine";
 
 const features = [
   {
     icon: Utensils,
     title: "Menu for Every Taste",
-    desc: "A wide variety of delicious menu options to suit every preference, from snacks to full meals.",
+    desc: "From classic Teh Tarik to flavorful snacks, our menu is thoughtfully crafted to please every craving—sweet or savory.",
   },
   {
-    icon: Coffee,
-    title: "Always Quality Beans",
-    desc: "We use only the best ingredients and quality beans for every cup and dish we serve.",
+    icon: Leaf,
+    title: "Premium Ingredients",
+    desc: "We use only high-quality tea, fresh milk, and natural ingredients to serve the perfect cup of Teh Tarik every time.",
   },
   {
-    icon: UserCheck,
-    title: "Experienced Barista",
-    desc: "Our team is made up of skilled baristas and kitchen staff, ensuring every order is crafted to perfection.",
+    icon: Gift,
+    title: "Signature Experience",
+    desc: "Enjoy more than just a drink. Tisgumi offers a vibrant atmosphere and a signature experience that keeps you coming back.",
   },
 ];
 
