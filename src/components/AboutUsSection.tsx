@@ -24,62 +24,86 @@ const aboutData = [
 
 export default function AboutUsSection() {
   return (
-    <section className="w-full max-w-6xl mx-auto py-20 grid gap-12" id="about">
+    <section
+      className="w-full px-4 sm:px-6 md:px-8 lg:px-12 max-w-7xl mx-auto py-12 md:py-20 grid gap-8 md:gap-12"
+      id="about"
+    >
       {/* Row 1 */}
-      <div className="grid md:grid-cols-2 gap-8 items-center">
-        <div className="flex flex-col gap-4 order-1 max-w-md">
-          <SubtitleWithLine className="text-sm text-white/70">{aboutData[0].subtitle}</SubtitleWithLine>
-          <h2 className="text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
+      <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+        <div className="flex flex-col gap-3 md:gap-4 order-1 max-w-md mx-auto md:mx-0">
+          <SubtitleWithLine className="text-sm text-white/70">
+            {aboutData[0].subtitle}
+          </SubtitleWithLine>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
             {aboutData[0].title}
           </h2>
-          <p className="text-white/80 font-poppins mb-4">{aboutData[0].desc}</p>
+          <p className="text-sm sm:text-base text-white/80 font-poppins mb-4 leading-relaxed">
+            {aboutData[0].desc}
+          </p>
         </div>
-        <div className="order-2">
-          <Image
-            src={aboutData[0].img}
-            alt="about us"
-            width={600}
-            height={400}
-            className="object-cover w-full h-96"
-          />
+        <div className="order-2 w-full">
+          <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
+            <Image
+              src={aboutData[0].img}
+              alt="about us"
+              fill
+              className="object-cover rounded-lg"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority
+            />
+          </div>
         </div>
       </div>
+
       {/* Row 2 */}
-      <div className="grid md:grid-cols-2 gap-8 items-center">
-        <div className="order-2 md:order-1">
-          <Image
-            src={aboutData[1].img}
-            alt="our menu"
-            width={600}
-            height={400}
-            className="object-cover w-full h-96"
-          />
+      <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+        <div className="order-2 md:order-1 w-full">
+          <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
+            <Image
+              src={aboutData[1].img}
+              alt="our menu"
+              fill
+              className="object-cover rounded-lg"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-4 order-1 md:order-2 max-w-md md:ms-15">
-          <SubtitleWithLine className="text-sm text-white/70">{aboutData[1].subtitle}</SubtitleWithLine>
-          <h2 className="text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
+        <div className="flex flex-col gap-3 md:gap-4 order-1 md:order-2 max-w-md mx-auto md:mx-0 md:ms-auto">
+          <SubtitleWithLine className="text-sm text-white/70">
+            {aboutData[1].subtitle}
+          </SubtitleWithLine>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
             {aboutData[1].title}
           </h2>
-          <p className="text-white/80 font-poppins mb-4">{aboutData[1].desc}</p>
+          <p className="text-sm sm:text-base text-white/80 font-poppins mb-4 leading-relaxed">
+            {aboutData[1].desc}
+          </p>
         </div>
       </div>
+
       {/* Row 3 */}
-      <div className="grid md:grid-cols-2 gap-8 items-center">
-        <div className="flex flex-col gap-4 order-1 max-w-md">
-          <SubtitleWithLine className="text-sm text-white/70">{aboutData[2].subtitle}</SubtitleWithLine>
-          <h2 className="text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
+      <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+        <div className="flex flex-col gap-3 md:gap-4 order-1 max-w-md mx-auto md:mx-0">
+          <SubtitleWithLine className="text-sm text-white/70">
+            {aboutData[2].subtitle}
+          </SubtitleWithLine>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
             {aboutData[2].title}
           </h2>
-          <p className="text-white/80 font-poppins mb-4">{aboutData[2].desc}</p>
+          <p className="text-sm sm:text-base text-white/80 font-poppins mb-4 leading-relaxed">
+            {aboutData[2].desc}
+          </p>
         </div>
-        <div className="order-2">
-          <Image
-            src={aboutData[2].img}
-            alt="our team"
-            width={600}
-            height={400}
-            className="object-cover w-full h-96"
-          />
+        <div className="order-2 w-full">
+          <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
+            <Image
+              src={aboutData[2].img}
+              alt="our team"
+              fill
+              className="object-cover rounded-lg"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+          </div>
         </div>
       </div>
     </section>
