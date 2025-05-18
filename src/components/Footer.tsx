@@ -11,9 +11,12 @@ import {
 } from "lucide-react";
 
 const socialLinks = [
-  { icon: Facebook, href: "#" },
+  {
+    icon: Facebook,
+    href: "https://www.facebook.com/p/Tisgumi-100084736407067/",
+  },
   { icon: Twitter, href: "#" },
-  { icon: Instagram, href: "#" },
+  { icon: Instagram, href: "https://www.instagram.com/tisgumi/" },
   { icon: Linkedin, href: "#" },
 ];
 
@@ -110,7 +113,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-[#222] flex flex-col md:flex-row items-center justify-between gap-4 text-white/60 text-sm">
-        <span>©2024 TISGUMI, All right reserved</span>
+        <span>©2025 TISGUMI, All right reserved</span>
         <div className="flex gap-6">
           <Link href="#" className="hover:text-[#8e8e4b] transition">
             Privacy Policy
