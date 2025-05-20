@@ -151,7 +151,7 @@ export default function AdminsPage() {
       </div>
 
       {/* Search and Table */}
-      <div className="rounded-md border">
+      <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
         <div className="p-4">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
