@@ -1,6 +1,12 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+
+  const router = useRouter();
+
   return (
     <section
       className="relative flex flex-col items-center justify-center min-h-screen h-[100vh] bg-cover bg-center px-4 font-poppins"
@@ -18,6 +24,7 @@ export default function HeroSection() {
           <Button
             className="bg-transparent border border-white text-white font-semibold px-5 py-5 rounded-md shadow hover:bg-white/10 font-poppins uppercase"
             size="lg"
+            onClick={() => router.push("#menu")}
           >
             Check Our Menu
           </Button>
@@ -25,6 +32,7 @@ export default function HeroSection() {
             variant="ghost"
             className="text-white font-semibold px-8 py-3 rounded-md hover:text-[#decb94] hover:bg-transparent font-poppins uppercase"
             size="lg"
+            onClick={() => router.push("https://wa.me/+6285339307788")}
           >
             Contact Us
           </Button>

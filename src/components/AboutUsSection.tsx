@@ -47,7 +47,7 @@ export default function AboutUsSection() {
               src={aboutData[0].img}
               alt="about us"
               fill
-              className="object-cover rounded-lg"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
             />
@@ -63,7 +63,7 @@ export default function AboutUsSection() {
               src={aboutData[1].img}
               alt="our menu"
               fill
-              className="object-cover rounded-lg"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
@@ -100,7 +100,7 @@ export default function AboutUsSection() {
               src={aboutData[2].img}
               alt="our team"
               fill
-              className="object-cover rounded-lg"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>

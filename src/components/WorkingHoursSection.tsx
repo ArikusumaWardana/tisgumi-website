@@ -1,8 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import SubtitleWithLine from "./ui/subtitleWithLine";
+import { useRouter } from "next/navigation";
 
 export default function WorkingHoursSection() {
+  const router = useRouter();
   return (
     <section className="relative w-full flex justify-center items-center min-h-[350px] md:min-h-[480px] py-12 px-4 overflow-hidden">
       {/* Background image */}
@@ -25,10 +29,16 @@ export default function WorkingHoursSection() {
             Working Hours
           </h2>
           <div className="flex gap-4 mb-2">
-            <Button className="bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-white font-semibold px-4 py-5   rounded-sm font-poppins uppercase">
+            <Button
+              className="bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-white font-semibold px-4 py-5   rounded-sm font-poppins uppercase"
+              onClick={() => router.push("#menu")}
+            >
               See Our Menu
             </Button>
-            <button className="text-white font-poppins hover:text-[#8e8e4b] transition uppercase">
+            <button
+              className="text-white font-poppins hover:text-[#8e8e4b] transition uppercase"
+              onClick={() => router.push("https://wa.me/+6285339307788")}
+            >
               Contact Us
             </button>
           </div>
