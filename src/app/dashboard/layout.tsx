@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -18,6 +18,7 @@ import {
   Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const sidebarLinks = [
   {
@@ -62,22 +63,46 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Initialize sidebar state based on screen size
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Check if window is available (client-side)
+    if (typeof window !== "undefined") {
+      // Set initial state based on screen width
+      return window.innerWidth >= 768; // md breakpoint
+    }
+    return false; // Default to closed on server-side
+  });
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathname = usePathname();
+
+  // Update sidebar state when screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth >= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen transition-transform",
+          "fixed top-0 left-0 z-40 h-screen transition-transform duration-300",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           "md:translate-x-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
         )}
       >
         <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
           <Link href="/dashboard" className="flex items-center gap-2">
+            <Image
+              src="/tisgumi-logo.webp"
+              alt="TISGUMI"
+              width={40}
+              height={40}
+            />
             <span className="text-xl font-bold text-gray-900 dark:text-white">
               TISGUMI
             </span>
@@ -100,7 +125,7 @@ export default function DashboardLayout({
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                   isActive
-                    ? "bg-[#8e8e4b] text-white"
+                    ? "bg-[#0f7243] text-white"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
               >
