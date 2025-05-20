@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const navLinks = [
   { name: "Home", href: "#" },
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,10 +39,10 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`w-full flex items-center justify-between px-4 md:px-8 py-4 md:py-6 font-poppins fixed top-0 left-0 z-40 transition-all duration-300 ${
+        className={`w-full flex items-center justify-between px-4 md:px-8 font-poppins fixed top-0 left-0 z-40 transition-all duration-300 ${
           scrolled
-            ? "bg-[#10191b]/90 shadow-lg backdrop-blur"
-            : "bg-transparent"
+            ? "bg-[#10191b]/90 shadow-lg backdrop-blur py-4"
+            : "bg-transparent py-4 md:py-6"
         }`}
       >
         <div className="flex items-center gap-2">
@@ -71,6 +73,7 @@ export default function Navbar() {
           <Button
             className="hidden md:flex bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-white font-md px-5 py-3 rounded-md shadow font-poppins uppercase"
             size="lg"
+            onClick={() => router.push("https://wa.me/+6285339307788")}
           >
             Contact Us
           </Button>
@@ -111,7 +114,7 @@ export default function Navbar() {
           <Button
             className="bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-white font-md px-8 py-4 rounded-md shadow font-poppins uppercase text-lg"
             size="lg"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => router.push("https://wa.me/+6285339307788")}
           >
             Contact Us
           </Button>

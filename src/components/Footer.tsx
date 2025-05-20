@@ -5,7 +5,7 @@ import {
   Facebook,
   Twitter,
   Instagram,
-  Linkedin,
+  Store,
   MapPin,
   Phone,
 } from "lucide-react";
@@ -17,7 +17,10 @@ const socialLinks = [
   },
   { icon: Twitter, href: "#" },
   { icon: Instagram, href: "https://www.instagram.com/tisgumi/" },
-  { icon: Linkedin, href: "#" },
+  {
+    icon: Store,
+    href: "https://gofood.co.id/bali/restaurant/teh-tarik-canai-tisgumi-grahayowanasuci-jl-hasanudin-215d7365-aac6-44d5-b4c0-da0e5bf0b7aa",
+  },
 ];
 
 const userLinks = [
