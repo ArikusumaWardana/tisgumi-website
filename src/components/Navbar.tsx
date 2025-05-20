@@ -47,7 +47,7 @@ export default function Navbar() {
       >
         <div className="flex items-center gap-2">
           <Image
-            src="/tisgumi-logo.webp"
+            src="/logo-tisgumi.webp"
             alt="Foodi Logo"
             width={40}
             height={40}
