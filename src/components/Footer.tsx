@@ -24,7 +24,7 @@ const socialLinks = [
 ];
 
 const userLinks = [
-  { label: "Home", href: "#" },
+  { label: "Home", href: "#hero" },
   { label: "About Us", href: "#about" },
   { label: "Testimonials", href: "#testimonials" },
   { label: "Menu", href: "#menu" },

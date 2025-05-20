@@ -10,7 +10,7 @@ export default function HeroSection() {
   return (
     <section
       className="relative flex flex-col items-center justify-center min-h-screen h-[100vh] bg-cover bg-center px-4 font-poppins"
-      style={{ backgroundImage: "url(/background.webp)" }}
+      style={{ backgroundImage: "url(/background.webp)" }} id="hero"
     >
       <div className="absolute inset-0 bg-black/60 z-0" />
       <div className="relative z-10 flex flex-col items-center justify-center text-center gap-4">

@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const navLinks = [
-  { name: "Home", href: "#" },
+  { name: "Home", href: "#hero" },
   { name: "About Us", href: "#about" },
   { name: "Features", href: "#features" },
   { name: "Menu", href: "#menu" },
@@ -73,9 +73,9 @@ export default function Navbar() {
           <Button
             className="hidden md:flex bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-white font-md px-5 py-3 rounded-md shadow font-poppins uppercase"
             size="lg"
-            onClick={() => router.push("https://wa.me/+6285339307788")}
+            onClick={() => router.push("/login")}
           >
-            Contact Us
+            Login Tisgumi
           </Button>
           <button
             className="md:hidden p-2 rounded hover:bg-orange-100/10"

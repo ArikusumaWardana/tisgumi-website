@@ -17,7 +17,7 @@ export default function Login() {
           <div className="flex justify-center">
             <Image
               className="h-16 w-16 sm:h-20 sm:w-20"
-              src="/tisgumi-logo.webp"
+              src="/logo-tisgumi.webp"
               alt="Tisgumi Logo"
               width={80}
               height={80}
