@@ -191,13 +191,13 @@ import Link from "next/link";
              Quick Actions
            </h3>
            <div className="space-y-3">
-             <button className="w-full px-4 py-2 text-sm font-medium text-white bg-[#8e8e4b] hover:bg-[#8e8e4b]/90 rounded-lg transition-colors">
+             <button className="w-full px-4 py-2 text-sm font-medium text-white bg-[#0f7243] hover:bg-[#0f7243]/90 rounded-lg transition-colors">
                Create New Order
              </button>
-             <button className="w-full px-4 py-2 text-sm font-medium text-[#8e8e4b] bg-[#8e8e4b]/10 hover:bg-[#8e8e4b]/20 rounded-lg transition-colors">
+             <button className="w-full px-4 py-2 text-sm font-medium text-[#0f7243] bg-[#0f7243]/10 hover:bg-[#0f7243]/20 rounded-lg transition-colors">
                Add New Product
              </button>
-             <button className="w-full px-4 py-2 text-sm font-medium text-[#8e8e4b] bg-[#8e8e4b]/10 hover:bg-[#8e8e4b]/20 rounded-lg transition-colors">
+             <button className="w-full px-4 py-2 text-sm font-medium text-[#0f7243] bg-[#0f7243]/10 hover:bg-[#0f7243]/20 rounded-lg transition-colors">
                View Reports
              </button>
            </div>
