@@ -10,7 +10,7 @@
    Clock,
    ChevronRight,
  } from "lucide-react";
- import Link from "next/link";
+import Link from "next/link";
 
  // Mock data - nanti bisa diganti dengan data real dari API
  const stats = [
@@ -93,10 +93,10 @@
          {stats.map((stat) => (
            <div
              key={stat.title}
-             className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700"
+             className="bg-white dark:bg-gray-800 p-6 rounded-md border border-gray-200 dark:border-gray-700"
            >
              <div className="flex items-center justify-between">
-               <div className="p-2 rounded-lg bg-[#8e8e4b]/10">
+               <div className="p-2 rounded-md bg-[#8e8e4b]/10">
                  <stat.icon className="w-6 h-6 text-[#8e8e4b]" />
                </div>
                <span
@@ -123,7 +123,7 @@
        </div>
 
        {/* Recent Orders */}
-       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+       <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
            <div className="flex items-center justify-between">
              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -186,7 +186,7 @@
 
        {/* Quick Actions */}
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-md border border-gray-200 dark:border-gray-700">
            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
              Quick Actions
            </h3>
@@ -203,14 +203,14 @@
            </div>
          </div>
 
-         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 lg:col-span-2">
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-md border border-gray-200 dark:border-gray-700 lg:col-span-2">
            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
              Popular Products
            </h3>
            <div className="space-y-4">
              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                <div className="flex items-center gap-3">
-                 <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-600"></div>
+                 <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-gray-600"></div>
                  <div>
                    <h4 className="font-medium text-gray-900 dark:text-white">
                      Grilled Chicken Rice
@@ -226,7 +226,7 @@
              </div>
              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                <div className="flex items-center gap-3">
-                 <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-600"></div>
+                 <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-gray-600"></div>
                  <div>
                    <h4 className="font-medium text-gray-900 dark:text-white">
                      Special Coffee
