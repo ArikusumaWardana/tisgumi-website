@@ -33,7 +33,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              <div className="w-8 h-8 rounded-full bg-[#8e8e4b] flex items-center justify-center text-white font-medium">
+              <div className="w-8 h-8 rounded-full bg-[#0f7243] flex items-center justify-center text-white font-medium">
                 A
               </div>
               <span className="hidden md:block text-sm font-medium">Admin</span>

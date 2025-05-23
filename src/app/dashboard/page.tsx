@@ -97,7 +97,7 @@ import Link from "next/link";
            >
              <div className="flex items-center justify-between">
                <div className="p-2 rounded-md bg-[#8e8e4b]/10">
-                 <stat.icon className="w-6 h-6 text-[#8e8e4b]" />
+                 <stat.icon className="w-6 h-6 text-[#0f7243]" />
                </div>
                <span
                  className={`flex items-center gap-1 text-sm font-medium ${
@@ -131,7 +131,7 @@ import Link from "next/link";
              </h2>
              <Link
                href="/dashboard/orders"
-               className="text-sm font-medium text-[#8e8e4b] hover:text-[#8e8e4b]/80 flex items-center gap-1"
+               className="text-sm font-medium text-[#0f7243] hover:text-[#0f7243]/80 flex items-center gap-1"
              >
                View all
                <ChevronRight className="w-4 h-4" />
@@ -220,7 +220,7 @@ import Link from "next/link";
                    </p>
                  </div>
                </div>
-               <span className="text-sm font-medium text-[#8e8e4b]">
+               <span className="text-sm font-medium text-[#0f7243]">
                  Rp 32.000
                </span>
              </div>
@@ -236,7 +236,7 @@ import Link from "next/link";
                    </p>
                  </div>
                </div>
-               <span className="text-sm font-medium text-[#8e8e4b]">
+               <span className="text-sm font-medium text-[#0f7243]">
                  Rp 18.000
                </span>
              </div>
