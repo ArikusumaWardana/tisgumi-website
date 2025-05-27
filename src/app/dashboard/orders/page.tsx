@@ -29,6 +29,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { PageHeader } from "@/components/ui/page-header";
+import { DataTable } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { ActionMenu } from "@/components/ui/action-menu";
 
 // Mock data - nanti bisa diganti dengan data dari API
 const customers = [
@@ -169,191 +173,219 @@ export default function OrdersPage() {
     return matchesSearch && matchesDate;
   });
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Order Management
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Manage customer orders and transactions
-          </p>
+  const columns = [
+    { header: "ID", accessorKey: "id" },
+    { header: "Customer", accessorKey: "customerName" },
+    {
+      header: "Items",
+      accessorKey: "items",
+      cell: (row: any) => (
+        <div className="space-y-2">
+          {row.items.map((item: any) => (
+            <div key={item.productId} className="text-sm">
+              <span className="font-medium">{item.productName}</span>
+              <span className="text-gray-500"> x {item.quantity}</span>
+              <span className="text-[#8e8e4b] ml-2">
+                (Rp {item.total.toLocaleString("id-ID")})
+              </span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      header: "Total Amount",
+      accessorKey: "totalAmount",
+      cell: (row: any) => (
+        <span className="text-[#8e8e4b]">
+          Rp {row.totalAmount.toLocaleString("id-ID")}
+        </span>
+      ),
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: (row: any) => <StatusBadge status={row.status} />,
+    },
+    { header: "Created At", accessorKey: "createdAt" },
+    {
+      header: "",
+      accessorKey: "actions",
+      cell: (row: any) => (
+        <ActionMenu
+          onEdit={() => console.log("Edit", row.id)}
+          onView={() => console.log("View Details", row.id)}
+          onDelete={() => console.log("Delete", row.id)}
+        />
+      ),
+    },
+  ];
+
+  const addOrderForm = (
+    <form className="space-y-4 py-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label
+            htmlFor="customer"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Select Customer
+          </label>
+          <select
+            id="customer"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={selectedCustomer}
+            onChange={(e) => setSelectedCustomer(e.target.value)}
+          >
+            <option value="">Select a customer</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {customer.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full md:w-auto">
-              <Plus className="w-4 h-4" />
-              Create New Order
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Order</DialogTitle>
-            </DialogHeader>
-            <form className="space-y-4 py-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="customer"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Select Customer
-                  </label>
-                  <select
-                    id="customer"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={selectedCustomer}
-                    onChange={(e) => setSelectedCustomer(e.target.value)}
-                  >
-                    <option value="">Select a customer</option>
-                    {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="paymentStatus"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Payment Status
-                  </label>
-                  <select
-                    id="paymentStatus"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={paymentStatus}
-                    onChange={(e) => setPaymentStatus(e.target.value)}
-                  >
-                    <option value="belum_lunas">Belum Lunas</option>
-                    <option value="lunas">Lunas</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Order Items</label>
-                </div>
-
-                {orderItems.map((item, index) => (
-                  <div key={index} className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-[1fr,120px,140px] items-start">
-                      <div className="space-y-2">
-                        <select
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          value={item.productId}
-                          onChange={(e) =>
-                            handleProductChange(index, e.target.value)
-                          }
-                        >
-                          <option value="">Select a product</option>
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name} (Rp {p.price.toLocaleString("id-ID")})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Input
-                          type="number"
-                          placeholder="Qty"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            // Prevent negative input
-                            const value = e.target.value;
-                            if (value === "" || Number(value) >= 0) {
-                              handleQuantityChange(index, value);
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            // Prevent minus sign input
-                            if (e.key === "-") {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-10 flex items-center px-3 text-sm text-gray-500 truncate">
-                          Rp {item.total.toLocaleString("id-ID")}
-                        </div>
-                      </div>
-                    </div>
-
-                    {orderItems.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => removeProductInput(index)}
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Remove Item
-                      </Button>
-                    )}
-                  </div>
-                ))}
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addProductInput}
-                  className="w-full"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Product
-                </Button>
-
-                <div className="flex justify-between items-center pt-4 border-t">
-                  <span className="text-sm font-medium">Total Amount:</span>
-                  <span className="text-lg font-bold text-[#8e8e4b]">
-                    Rp {calculateTotalAmount().toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsAddDialogOpen(false);
-                    setSelectedCustomer("");
-                    setPaymentStatus("belum_lunas");
-                    setOrderItems([
-                      { productId: "", quantity: "", price: 0, total: 0 },
-                    ]);
-                  }}
-                  className="w-full sm:w-auto"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="w-full sm:w-auto">
-                  Create Order
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <div className="space-y-2">
+          <label
+            htmlFor="paymentStatus"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Payment Status
+          </label>
+          <select
+            id="paymentStatus"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={paymentStatus}
+            onChange={(e) => setPaymentStatus(e.target.value)}
+          >
+            <option value="belum_lunas">Belum Lunas</option>
+            <option value="lunas">Lunas</option>
+          </select>
+        </div>
       </div>
 
-      {/* Filters and Table */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Order Items</label>
+        </div>
+
+        {orderItems.map((item, index) => (
+          <div key={index} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-[1fr,120px,140px] items-start">
+              <div className="space-y-2">
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={item.productId}
+                  onChange={(e) => handleProductChange(index, e.target.value)}
+                >
+                  <option value="">Select a product</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} (Rp {p.price.toLocaleString("id-ID")})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Input
+                  type="number"
+                  placeholder="Qty"
+                  min="1"
+                  value={item.quantity}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || Number(value) >= 0) {
+                      handleQuantityChange(index, value);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "-") {
+                      e.preventDefault();
+                    }
+                  }}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="h-10 flex items-center px-3 text-sm text-gray-500 truncate">
+                  Rp {item.total.toLocaleString("id-ID")}
+                </div>
+              </div>
+            </div>
+
+            {orderItems.length > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={() => removeProductInput(index)}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Remove Item
+              </Button>
+            )}
+          </div>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addProductInput}
+          className="w-full"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Product
+        </Button>
+
+        <div className="flex justify-between items-center pt-4 border-t">
+          <span className="text-sm font-medium">Total Amount:</span>
+          <span className="text-lg font-bold text-[#8e8e4b]">
+            Rp {calculateTotalAmount().toLocaleString("id-ID")}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-end gap-3">
+        <Button
+          variant="outline"
+          onClick={() => {
+            setIsAddDialogOpen(false);
+            setSelectedCustomer("");
+            setPaymentStatus("belum_lunas");
+            setOrderItems([
+              { productId: "", quantity: "", price: 0, total: 0 },
+            ]);
+          }}
+          className="w-full sm:w-auto"
+        >
+          Cancel
+        </Button>
+        <Button type="submit" className="w-full sm:w-auto">
+          Create Order
+        </Button>
+      </div>
+    </form>
+  );
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Order Management"
+        description="Manage customer orders and transactions"
+        actionButton={{
+          label: "Create New Order",
+          icon: <Plus className="w-4 h-4 mr-2" />,
+          dialogContent: addOrderForm,
+        }}
+      />
+
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="p-4 space-y-4">
-          {/* Search and Date Filter Container */}
           <div className="flex flex-col gap-4">
-            {/* Search Bar */}
             <div className="relative w-full">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
                 placeholder="Search orders..."
@@ -363,7 +395,6 @@ export default function OrdersPage() {
               />
             </div>
 
-            {/* Date Range Filter */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 flex items-center gap-2 min-w-0">
                 <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
@@ -387,86 +418,13 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Table Container - Add horizontal scroll for mobile */}
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell>
-                    <div className="space-y-2">
-                      {order.items.map((item) => (
-                        <div key={item.productId} className="text-sm">
-                          <span className="font-medium">
-                            {item.productName}
-                          </span>
-                          <span className="text-gray-500">
-                            {" "}
-                            x {item.quantity}
-                          </span>
-                          <span className="text-[#8e8e4b] ml-2">
-                            (Rp {item.total.toLocaleString("id-ID")})
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    Rp {order.totalAmount.toLocaleString("id-ID")}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                        order.status === "Lunas"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                          : order.status === "Belum Lunas"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400"
-                      }`}
-                    >
-                      {order.status.charAt(0).toUpperCase() +
-                        order.status.slice(1)}
-                    </span>
-                  </TableCell>
-                  <TableCell>{order.createdAt}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={filteredOrders}
+          searchPlaceholder="Search orders..."
+          onSearch={setSearchQuery}
+          searchValue={searchQuery}
+        />
       </div>
     </div>
   );
