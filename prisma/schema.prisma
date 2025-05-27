@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  superadmin
+}
+
+// Model for Users
+model User {
+  id        BigInt    @id @default(autoincrement())
+  code      String    @unique
+  name      String
+  email     String    @unique
+  password  String
+  role      Role
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  deleted_at DateTime?
+
+  invoices_created Invoice[] @relation("created_by_user_id")
+
+  @@map("users")
+}
+
+// Model for Category
+model Category {
+  id         BigInt   @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  deleted_at DateTime?
+
+  Product Product[]
+
+  @@map("categories")
+}
+
+// Model for Product
+model Product {
+  id            BigInt   @id @default(autoincrement())
+  code          String   @unique
+  name          String
+  description   String?
+  default_price Int
+  category_id   BigInt
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  deleted_at    DateTime?
+
+  category      Category @relation(fields: [category_id], references: [id])
+  invoice_items InvoiceItem[]
+  custom_prices CustomProductPricing[]
+
+  @@map("products")
+}
+
+// Model for Customer
+model Customer {
+  id          BigInt   @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  phone       String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+
+  invoices    Invoice[]
+  custom_prices CustomProductPricing[]
+
+  @@map("customers")
+}
+
+// Model for Invoice
+model Invoice {
+  id                  BigInt    @id @default(autoincrement())
+  code                String    @unique
+  name                String
+  customer_id         BigInt
+  created_by_user_id  BigInt
+  show_price          Boolean   @default(true)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  customer        Customer  @relation(fields: [customer_id], references: [id])
+  created_by_user User      @relation("created_by_user_id", fields: [created_by_user_id], references: [id])
+  invoice_items   InvoiceItem[]
+
+  @@map("invoices")
+} 
+
+// Model for InvoiceItem
+model InvoiceItem {
+  id            BigInt    @id @default(autoincrement())
+  code          String    @unique
+  invoice_id    BigInt
+  product_id    BigInt
+  quantity      Int
+  price_at_time Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  invoice Invoice @relation(fields: [invoice_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("invoice_items")
+}
+
+// Model for CustomProductPricing
+model CustomProductPricing {
+  id            BigInt    @id @default(autoincrement())
+  code          String    @unique 
+  customer_id   BigInt
+  product_id    BigInt
+  custom_price  Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  customer Customer @relation(fields: [customer_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("custom_product_pricings")
+}
