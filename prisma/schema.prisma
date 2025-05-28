@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -37,9 +36,10 @@ model User {
   @@map("users")
 }
 
-// Model for Category
-model Category {
+// Model for Categories
+model Categories {
   id         BigInt   @id @default(autoincrement())
+  code       String   @unique
   name       String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -62,7 +62,7 @@ model Product {
   updated_at    DateTime @updatedAt
   deleted_at    DateTime?
 
-  category      Category @relation(fields: [category_id], references: [id])
+  category      Categories @relation(fields: [category_id], references: [id])
   invoice_items InvoiceItem[]
   custom_prices CustomProductPricing[]
 
