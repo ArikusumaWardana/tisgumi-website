@@ -35,15 +35,29 @@ model User {
   code       String    @unique @db.VarChar(50)
   name       String    @db.VarChar(100)
   email      String    @unique @db.VarChar(100)
+  phone      String    @db.VarChar(20)
   password   String    @db.VarChar(255)
   role       Role      @default(admin)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
+  auth_sessions    Session[]
   invoices_created Invoice[] @relation("created_by_user_id")
 
   @@map("users")
+}
+
+// Model for Session
+model Session {
+  id             String @id @unique
+  user_id        BigInt
+  active_expires BigInt
+  idle_expires   BigInt
+
+  user User @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+  @@index([user_id])
 }
 
 // Model for Categories
@@ -74,7 +88,7 @@ model Product {
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
 
-  category      Categories             @relation(fields: [category_id], references: [id])
+  category      Categories             @relation(fields: [category_id], references: [id], onDelete: Cascade)
   invoice_items InvoiceItem[]
   custom_prices CustomProductPricing[]
 
@@ -112,7 +126,7 @@ model Invoice {
   updated_at         DateTime      @updatedAt
   deleted_at         DateTime?
 
-  customer        Customer      @relation(fields: [customer_id], references: [id])
+  customer        Customer      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   created_by_user User          @relation("created_by_user_id", fields: [created_by_user_id], references: [id])
   invoice_items   InvoiceItem[]
 
@@ -131,8 +145,8 @@ model InvoiceItem {
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
 
-  invoice Invoice @relation(fields: [invoice_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
+  invoice Invoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@map("invoice_items")
 }
@@ -148,8 +162,8 @@ model CustomProductPricing {
   updated_at   DateTime  @updatedAt
   deleted_at   DateTime?
 
-  customer Customer @relation(fields: [customer_id], references: [id])
-  product  Product  @relation(fields: [product_id], references: [id])
+  customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@map("custom_product_pricings")
 }
