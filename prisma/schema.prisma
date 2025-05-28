@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -19,16 +19,26 @@ enum Role {
   superadmin
 }
 
+enum Status {
+  active
+  inactive
+}
+
+enum InvoiceStatus {
+  lunas
+  belum_lunas
+}
+
 // Model for Users
 model User {
-  id        BigInt    @id @default(autoincrement())
-  code      String    @unique
-  name      String
-  email     String    @unique
-  password  String
-  role      Role
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         BigInt    @id @default(autoincrement())
+  code       String    @unique @db.VarChar(50)
+  name       String    @db.VarChar(100)
+  email      String    @unique @db.VarChar(100)
+  password   String    @db.VarChar(255)
+  role       Role      @default(admin)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
   invoices_created Invoice[] @relation("created_by_user_id")
@@ -38,11 +48,12 @@ model User {
 
 // Model for Categories
 model Categories {
-  id         BigInt   @id @default(autoincrement())
-  code       String   @unique
-  name       String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id         BigInt    @id @default(autoincrement())
+  code       String    @unique @db.VarChar(50)
+  name       String    @db.VarChar(100)
+  status     Status    @default(active)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
   Product Product[]
@@ -52,17 +63,18 @@ model Categories {
 
 // Model for Product
 model Product {
-  id            BigInt   @id @default(autoincrement())
-  code          String   @unique
-  name          String
-  description   String?
-  default_price Int
+  id            BigInt    @id @default(autoincrement())
+  code          String    @unique @db.VarChar(50)
+  name          String    @db.VarChar(100)
+  description   String?   @db.Text
+  default_price Int       @db.Integer
+  status        Status    @default(active)
   category_id   BigInt
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
 
-  category      Categories @relation(fields: [category_id], references: [id])
+  category      Categories             @relation(fields: [category_id], references: [id])
   invoice_items InvoiceItem[]
   custom_prices CustomProductPricing[]
 
@@ -71,15 +83,16 @@ model Product {
 
 // Model for Customer
 model Customer {
-  id          BigInt   @id @default(autoincrement())
-  code        String   @unique
-  name        String
-  phone       String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  deleted_at  DateTime?
+  id         BigInt    @id @default(autoincrement())
+  code       String    @unique @db.VarChar(50)
+  name       String    @db.VarChar(100)
+  phone      String    @db.VarChar(20)
+  status     Status    @default(active)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
-  invoices    Invoice[]
+  invoices      Invoice[]
   custom_prices CustomProductPricing[]
 
   @@map("customers")
@@ -87,31 +100,33 @@ model Customer {
 
 // Model for Invoice
 model Invoice {
-  id                  BigInt    @id @default(autoincrement())
-  code                String    @unique
-  name                String
-  customer_id         BigInt
-  created_by_user_id  BigInt
-  show_price          Boolean   @default(true)
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
-  deleted_at          DateTime?
+  id                 BigInt        @id @default(autoincrement())
+  code               String        @unique @db.VarChar(50)
+  name               String        @db.VarChar(100)
+  customer_id        BigInt
+  created_by_user_id BigInt
+  show_price         Boolean       @default(true)
+  status             InvoiceStatus @default(lunas)
+  file_location      String[]
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @updatedAt
+  deleted_at         DateTime?
 
-  customer        Customer  @relation(fields: [customer_id], references: [id])
-  created_by_user User      @relation("created_by_user_id", fields: [created_by_user_id], references: [id])
+  customer        Customer      @relation(fields: [customer_id], references: [id])
+  created_by_user User          @relation("created_by_user_id", fields: [created_by_user_id], references: [id])
   invoice_items   InvoiceItem[]
 
   @@map("invoices")
-} 
+}
 
 // Model for InvoiceItem
 model InvoiceItem {
   id            BigInt    @id @default(autoincrement())
-  code          String    @unique
+  code          String    @unique @db.VarChar(50)
   invoice_id    BigInt
   product_id    BigInt
-  quantity      Int
-  price_at_time Int
+  quantity      Int       @db.Integer
+  price_at_time Int       @db.Integer
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
@@ -124,17 +139,17 @@ model InvoiceItem {
 
 // Model for CustomProductPricing
 model CustomProductPricing {
-  id            BigInt    @id @default(autoincrement())
-  code          String    @unique 
-  customer_id   BigInt
-  product_id    BigInt
-  custom_price  Int
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  deleted_at    DateTime?
+  id           BigInt    @id @default(autoincrement())
+  code         String    @unique @db.VarChar(50)
+  customer_id  BigInt
+  product_id   BigInt
+  custom_price Int       @db.Integer
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
 
   customer Customer @relation(fields: [customer_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
+  product  Product  @relation(fields: [product_id], references: [id])
 
   @@map("custom_product_pricings")
 }
