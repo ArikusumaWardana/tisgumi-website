@@ -3,6 +3,7 @@
 import { ActionMenu } from "@/components/ui/action-menu";
 import { Categories } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
+import FormDelete from "./_components/form-delete";
 
 export const columns: ColumnDef<Categories>[] = [
   {
@@ -30,8 +31,7 @@ export const columns: ColumnDef<Categories>[] = [
       return (
         <ActionMenu
           onEdit={`/dashboard/categories/edit/${category.id}`}
-          onView={() => console.log("View", category.id)}
-          onDelete={() => console.log("Delete", category.id)}
+          onDelete={<FormDelete id={category.id} />}
         />
       );
     },

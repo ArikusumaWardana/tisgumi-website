@@ -45,42 +45,68 @@ export async function updateCategory(
   formData: FormData,
   id: number | undefined
 ): Promise<ActionResult> {
-  
-     const validate = categorySchema.safeParse({
-       code: formData.get("code"),
-       name: formData.get("name"),
-     });
+  const validate = categorySchema.safeParse({
+    code: formData.get("code"),
+    name: formData.get("name"),
+  });
 
-     // If the validation fails, return an error message
-     if (!validate.success) {
-       return { error: validate.error.errors[0].message };
-     }
+  // If the validation fails, return an error message
+  if (!validate.success) {
+    return { error: validate.error.errors[0].message };
+  }
 
-     // If the id is undefined, return an error message
-     if (id === undefined) {
-          return {
-               error: "Category not found"
-          }
-     }
+  // If the id is undefined, return an error message
+  if (id === undefined) {
+    return {
+      error: "Category not found",
+    };
+  }
 
-     // Try to update the category
-     try {
-          await prisma.categories.update({
-               where: {
-                    id: id
-               },
-               data: {
-                    code: validate.data.code,
-                    name: validate.data.name,
-                    updated_at: new Date()
-               }
-          })
-     } catch (error) {
-          console.log(error)
-          return {
-               error: "Failed to update category"
-          }
-     }
+  // Try to update the category
+  try {
+    await prisma.categories.update({
+      where: {
+        id: id,
+      },
+      data: {
+        code: validate.data.code,
+        name: validate.data.name,
+        updated_at: new Date(),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return {
+      error: "Failed to update category",
+    };
+  }
 
   return redirect("/dashboard/categories");
+}
+
+// Function to delete a category
+export async function deleteCategory(
+  _: unknown,
+  formData: FormData,
+  id: number
+): Promise<ActionResult> {
+
+     // Try to delete the category 
+     try {
+        await prisma.categories.update({
+            where: {
+                id: id
+             }, 
+             data: {
+                deleted_at: new Date()
+             }
+        })
+     } catch (error) {
+        console.log(error);
+        return {
+            error: "Failed to delete category"
+        }
+     } 
+
+  return redirect(`/dashboard/categories`);
 }
