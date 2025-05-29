@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Menu, Bell, ChevronDown } from "lucide-react";
+import FormLogout from "./form-logout";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -49,9 +50,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     <span className="font-medium">admin@tisgumi.com</span>
                   </div>
                   <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
-                  <button className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                    Logout
-                  </button>
+                  <FormLogout />
                 </div>
               </div>
             )}
