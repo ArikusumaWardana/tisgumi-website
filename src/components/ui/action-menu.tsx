@@ -24,24 +24,24 @@ export function ActionMenu({
   customActions,
 }: ActionMenuProps) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" forceMount>
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {onEdit && (
           <DropdownMenuItem asChild>
-            <Link href={`${onEdit}`}>Edit</Link>
+            <Link href={onEdit}>Edit</Link>
           </DropdownMenuItem>
         )}
         {onView && (
           <DropdownMenuItem asChild>
-            <Link href={`${onView}`}>View Details</Link>
+            <Link href={onView}>View Details</Link>
           </DropdownMenuItem>
         )}
         {customActions?.map((action, index) => (
@@ -52,9 +52,7 @@ export function ActionMenu({
         {onDelete && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              {onDelete}
-            </DropdownMenuItem>
+            <DropdownMenuItem asChild>{onDelete}</DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>
