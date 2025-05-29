@@ -9,7 +9,7 @@ CREATE TYPE "InvoiceStatus" AS ENUM ('lunas', 'belum_lunas');
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "email" VARCHAR(100) NOT NULL,
@@ -24,18 +24,17 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "Session" (
+CREATE TABLE "sessions" (
     "id" TEXT NOT NULL,
-    "user_id" BIGINT NOT NULL,
-    "active_expires" BIGINT NOT NULL,
-    "idle_expires" BIGINT NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "categories" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "status" "Status" NOT NULL DEFAULT 'active',
@@ -48,13 +47,13 @@ CREATE TABLE "categories" (
 
 -- CreateTable
 CREATE TABLE "products" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "description" TEXT,
     "default_price" INTEGER NOT NULL,
     "status" "Status" NOT NULL DEFAULT 'active',
-    "category_id" BIGINT NOT NULL,
+    "category_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
@@ -64,7 +63,7 @@ CREATE TABLE "products" (
 
 -- CreateTable
 CREATE TABLE "customers" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "phone" VARCHAR(20) NOT NULL,
@@ -78,11 +77,11 @@ CREATE TABLE "customers" (
 
 -- CreateTable
 CREATE TABLE "invoices" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
-    "customer_id" BIGINT NOT NULL,
-    "created_by_user_id" BIGINT NOT NULL,
+    "customer_id" INTEGER NOT NULL,
+    "created_by_user_id" INTEGER NOT NULL,
     "show_price" BOOLEAN NOT NULL DEFAULT true,
     "status" "InvoiceStatus" NOT NULL DEFAULT 'lunas',
     "file_location" TEXT[],
@@ -95,10 +94,10 @@ CREATE TABLE "invoices" (
 
 -- CreateTable
 CREATE TABLE "invoice_items" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
-    "invoice_id" BIGINT NOT NULL,
-    "product_id" BIGINT NOT NULL,
+    "invoice_id" INTEGER NOT NULL,
+    "product_id" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL,
     "price_at_time" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -110,10 +109,10 @@ CREATE TABLE "invoice_items" (
 
 -- CreateTable
 CREATE TABLE "custom_product_pricings" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "code" VARCHAR(50) NOT NULL,
-    "customer_id" BIGINT NOT NULL,
-    "product_id" BIGINT NOT NULL,
+    "customer_id" INTEGER NOT NULL,
+    "product_id" INTEGER NOT NULL,
     "custom_price" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -129,10 +128,7 @@ CREATE UNIQUE INDEX "users_code_key" ON "users"("code");
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Session_id_key" ON "Session"("id");
-
--- CreateIndex
-CREATE INDEX "Session_user_id_idx" ON "Session"("user_id");
+CREATE UNIQUE INDEX "sessions_id_key" ON "sessions"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "categories_code_key" ON "categories"("code");
@@ -153,7 +149,7 @@ CREATE UNIQUE INDEX "invoice_items_code_key" ON "invoice_items"("code");
 CREATE UNIQUE INDEX "custom_product_pricings_code_key" ON "custom_product_pricings"("code");
 
 -- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
