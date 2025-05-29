@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import LoginForm from "./_components/form";
 
 export const metadata: Metadata = {
