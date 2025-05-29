@@ -32,6 +32,7 @@ export async function LoginAction(
       role: {
         in: ["superadmin", "admin"],
       },
+      deleted_at: null,
     },
   });
 
