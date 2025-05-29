@@ -10,26 +10,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ColumnDef } from "@tanstack/react-table";
 
-interface DataTableProps {
-  columns: {
-    header: string;
-    accessorKey: string;
-    cell?: (row: any) => React.ReactNode;
-  }[];
-  data: any[];
+interface DataTableProps<TData> {
+  columns: ColumnDef<TData>[];
+  data: TData[];
   searchPlaceholder?: string;
   onSearch?: (value: string) => void;
   searchValue?: string;
 }
 
-export function DataTable({
+export function DataTable<TData>({
   columns,
   data,
   searchPlaceholder,
   onSearch,
   searchValue,
-}: DataTableProps) {
+}: DataTableProps<TData>) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
       {searchPlaceholder && onSearch && (
@@ -49,21 +46,39 @@ export function DataTable({
       <Table>
         <TableHeader>
           <TableRow>
-            {columns.map((column) => (
-              <TableHead key={column.accessorKey}>{column.header}</TableHead>
+            {columns.map((column: any, index: number) => (
+              <TableHead key={(column.accessorKey as string) || index}>
+                {column.header}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, index) => (
-            <TableRow key={index}>
-              {columns.map((column) => (
-                <TableCell key={column.accessorKey}>
-                  {column.cell ? column.cell(row) : row[column.accessorKey]}
-                </TableCell>
-              ))}
+          {data.length > 0 ? (
+            data.map((row: any, index: number) => (
+              <TableRow key={row.id || row.code || index}>
+                {columns.map((column: any, colIndex: number) => (
+                  <TableCell
+                    key={`${row.id || index}-${
+                      (column.accessorKey as string) || colIndex
+                    }`}
+                  >
+                    {column.cell
+                      ? column.cell({ row: { original: row } })
+                      : column.accessorKey
+                      ? row[column.accessorKey]
+                      : ""}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No data available.
+              </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>
