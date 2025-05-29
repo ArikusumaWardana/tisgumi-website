@@ -1,13 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface PageHeaderProps {
   title: string;
@@ -15,8 +9,8 @@ interface PageHeaderProps {
   actionButton?: {
     label: string;
     onClick?: () => void;
+    href?: string;
     icon?: React.ReactNode;
-    dialogContent?: React.ReactNode;
   };
 }
 
@@ -37,21 +31,13 @@ export function PageHeader({
       </div>
 
       {actionButton &&
-        (actionButton.dialogContent ? (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="w-full md:w-auto">
-                {actionButton.icon}
-                {actionButton.label}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{actionButton.label}</DialogTitle>
-              </DialogHeader>
-              {actionButton.dialogContent}
-            </DialogContent>
-          </Dialog>
+        (actionButton.href ? (
+          <Link href={actionButton.href}>
+            <Button className="w-full md:w-auto">
+              {actionButton.icon}
+              {actionButton.label}
+            </Button>
+          </Link>
         ) : (
           <Button className="w-full md:w-auto" onClick={actionButton.onClick}>
             {actionButton.icon}
