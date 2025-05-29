@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import FormCategory from "@/app/(admin)/dashboard/_components/form-category";
+import FormCategory from "@/app/(admin)/dashboard/categories/_components/form-category";
 
 export default function CreateCategoryPage() {
   return (

@@ -8,26 +8,47 @@ import React from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
-import { postCategory } from "../categories/lib/actions";
+import { postCategory, updateCategory } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
+import { Categories } from "@prisma/client";
 
-export default function FormCategory() {
-  const initialState: ActionResult = {
-    error: "",
-  };
+// Initial state for the form
+const initialState: ActionResult = {
+  error: "",
+};
 
-  const [state, formAction] = useActionState(postCategory, initialState);
+interface FormCategoryProps {
+  type?: "create" | "update";
+  data?: Categories | null;
+}
 
-     function SubmitButton() {
-          const { pending } = useFormStatus()
-          return (
-            <Button type="submit" disabled={pending}>
-              <Save className="w-4 h-4 mr-2" />
-              {pending ? 'Creating...' : 'Create Category'}
-            </Button>
-          );
-     }
+// Submit button for the form
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      <Save className="w-4 h-4 mr-1" />
+      {pending ? "Saving..." : "Save Category"}
+    </Button>
+  );
+}
+
+// Form component for the category
+export default function FormCategory({
+  type = "create",
+  data = null,
+}: FormCategoryProps) {
+  // Update the category with the id
+  const updateCategoryWithId = (_: unknown, formData: FormData) =>
+    updateCategory(_, formData, data?.id);
+
+  // State and form action for the category
+  const [state, formAction] = useActionState(
+    type === "create" ? postCategory : updateCategoryWithId,
+    initialState
+  );
+
   return (
     <form action={formAction} className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
@@ -45,13 +66,16 @@ export default function FormCategory() {
           {/* Code Field */}
 
           <div className="space-y-2">
-            <Label htmlFor="code">Category Code *</Label>
+            <Label htmlFor="code">
+              Category Code <span className="text-red-600">*</span>
+            </Label>
             <Input
               id="code"
               name="code"
               type="text"
               placeholder="e.g., CAT-001"
               required
+              defaultValue={data?.code}
             />
             <p className="text-xs text-gray-500">
               Unique identifier for the category
@@ -60,13 +84,16 @@ export default function FormCategory() {
 
           {/* Name Field */}
           <div className="space-y-2">
-            <Label htmlFor="name">Category Name *</Label>
+            <Label htmlFor="name">
+              Category Name <span className="text-red-600">*</span>
+            </Label>
             <Input
               id="name"
               name="name"
               type="text"
               placeholder="e.g., Main Course"
               required
+              defaultValue={data?.name}
             />
             <p className="text-xs text-gray-500">
               Display name for the category

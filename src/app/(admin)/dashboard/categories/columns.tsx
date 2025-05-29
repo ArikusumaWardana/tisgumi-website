@@ -1,6 +1,5 @@
 "use client";
 
-import { StatusBadge } from "@/components/ui/status-badge";
 import { ActionMenu } from "@/components/ui/action-menu";
 import { Categories } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
@@ -26,12 +25,15 @@ export const columns: ColumnDef<Categories>[] = [
   {
     header: "Actions",
     accessorKey: "actions",
-    cell: ({ row }) => (
-      <ActionMenu
-        onEdit={() => console.log("Edit", row.original.id)}
-        onView={() => console.log("View", row.original.id)}
-        onDelete={() => console.log("Delete", row.original.id)}
-      />
-    ),
+    cell: ({ row }) => {
+      const category = row.original;
+      return (
+        <ActionMenu
+          onEdit={`/dashboard/categories/edit/${category.id}`}
+          onView={() => console.log("View", category.id)}
+          onDelete={() => console.log("Delete", category.id)}
+        />
+      );
+    },
   },
 ];

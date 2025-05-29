@@ -5,8 +5,10 @@ import { columns } from "./columns";
 import { getCategories } from "./lib/data";
 
 export default async function CategoriesPage() {
+  // Get all categories from the database
   const data = await getCategories();
 
+  // Return the categories page
   return (
     <div className="space-y-6">
       <PageHeader

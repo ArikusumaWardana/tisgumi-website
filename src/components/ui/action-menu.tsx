@@ -8,9 +8,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 interface ActionMenuProps {
-  onEdit?: () => void;
+  onEdit: string;
   onView?: () => void;
   onDelete?: () => void;
   customActions?: { label: string; onClick: () => void }[];
@@ -33,7 +34,11 @@ export function ActionMenu({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {onEdit && <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>}
+        {onEdit && (
+          <DropdownMenuItem asChild>
+            <Link href={`${onEdit}`}>Edit</Link>
+          </DropdownMenuItem>
+        )}
         {onView && (
           <DropdownMenuItem onClick={onView}>View Details</DropdownMenuItem>
         )}
