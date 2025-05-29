@@ -11,9 +11,9 @@ import {
 import Link from "next/link";
 
 interface ActionMenuProps {
-  onEdit: string;
-  onView?: () => void;
-  onDelete?: () => void;
+  onEdit?: string;
+  onView?: string;
+  onDelete?: React.ReactNode;
   customActions?: { label: string; onClick: () => void }[];
 }
 
@@ -40,7 +40,9 @@ export function ActionMenu({
           </DropdownMenuItem>
         )}
         {onView && (
-          <DropdownMenuItem onClick={onView}>View Details</DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`${onView}`}>View Details</Link>
+          </DropdownMenuItem>
         )}
         {customActions?.map((action, index) => (
           <DropdownMenuItem key={index} onClick={action.onClick}>
@@ -50,8 +52,8 @@ export function ActionMenu({
         {onDelete && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600" onClick={onDelete}>
-              Delete
+            <DropdownMenuItem asChild>
+              {onDelete}
             </DropdownMenuItem>
           </>
         )}
