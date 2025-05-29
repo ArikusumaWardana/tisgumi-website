@@ -9,3 +9,11 @@ export const categorySchema = z.object({
      code: z.string({required_error: 'Code is required'}).min(4, {message: 'Code must be at least 4 characters long'}),
      name: z.string({required_error: 'Name is required'}).min(4, {message: 'Name must be at least 4 characters long'}),
 })
+
+export const customerSchema = z.object({
+     code: z.string({required_error: 'Code is required'}).min(4, {message: 'Code must be at least 4 characters long'}),
+     name: z.string({required_error: 'Name is required'}).min(4, {message: 'Name must be at least 4 characters long'}),
+     phone: z.string({ required_error: 'Phone is required' }).min(10, { message: 'Phone must be at least 10 characters long' }),
+     status: z.enum(['active', 'inactive'], { required_error: 'Status is required' }),
+})
+
