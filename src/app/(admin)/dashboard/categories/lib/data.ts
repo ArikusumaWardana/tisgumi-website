@@ -5,6 +5,9 @@ export async function getCategories() {
           const categories = await prisma.categories.findMany({
                where: {
                     deleted_at: null
+               },
+               orderBy: {
+                    created_at: "desc"
                }
           })
           return categories;
