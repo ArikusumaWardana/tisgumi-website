@@ -1,9 +1,13 @@
 interface StatusBadgeProps {
-  status: string;
+  status?: string | null;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const getStatusStyles = (status: string) => {
+  const getStatusStyles = (status?: string | null) => {
+    if (!status) {
+      return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400";
+    }
+
     switch (status.toLowerCase()) {
       case "active":
         return "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400";
@@ -20,7 +24,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         status
       )}`}
     >
-      {status}
+      {status || "Unknown"}
     </span>
   );
 }
