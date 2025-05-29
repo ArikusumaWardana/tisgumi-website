@@ -10,27 +10,28 @@ const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
 // Lucia instance
 export const lucia = new Lucia(adapter, {
-     sessionCookie: {
-          expires: false,
-          attributes: {
-               secure: process.env.NODE_ENV === "production",
-          }
-     },
-     getUserAttributes: (attributes) => {
-          return {
-               id: attributes.id,
-               email: attributes.email,
-               name: attributes.name,
-               phone: attributes.phone,
-               role: attributes.role,
-          }
-     }
-})
+  sessionCookie: {
+    expires: false,
+    attributes: {
+      secure: process.env.NODE_ENV === "production",
+    },
+  },
+  getUserAttributes: (attributes) => {
+    return {
+      id: attributes.id,
+      email: attributes.email,
+      name: attributes.name,
+      phone: attributes.phone,
+      role: attributes.role,
+    };
+  },
+});
 
 // Get user from session
 export const getUser = cache(async () => {
-  const sessionId = (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
-  if (!sessionId) return null;
+  const sessionId =
+    (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
+  if (!sessionId) return { user: null, session: null };
   const { user, session } = await lucia.validateSession(sessionId);
   try {
     if (session && session.fresh) {
@@ -52,23 +53,23 @@ export const getUser = cache(async () => {
   } catch {
     // Next.js throws error when attempting to set cookies when rendering page
   }
-  return user;
+  return { user, session };
 });
 
 // Lucia types
 declare module "lucia" {
-     interface Register {
-       Lucia: typeof lucia;
-          user_id: number;
-          DatabaseUserAttributes: DatabaseUserAttributes;
-     }
+  interface Register {
+    Lucia: typeof lucia;
+    UserId: number;
+    DatabaseUserAttributes: DatabaseUserAttributes;
+  }
 }
 
 // Database user attributes
 interface DatabaseUserAttributes {
-     id: number;
-     email: string;
-     name: string;
-     phone: string;
-     role: Role;
+  id: number;
+  email: string;
+  name: string;
+  phone: string;
+  role: Role;
 }
