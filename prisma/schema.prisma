@@ -31,7 +31,7 @@ enum InvoiceStatus {
 
 // Model for Users
 model User {
-  id         BigInt    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   code       String    @unique @db.VarChar(50)
   name       String    @db.VarChar(100)
   email      String    @unique @db.VarChar(100)
@@ -42,7 +42,7 @@ model User {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  auth_sessions    Session[]
+  sessions   Session[]
   invoices_created Invoice[] @relation("created_by_user_id")
 
   @@map("users")
@@ -50,19 +50,18 @@ model User {
 
 // Model for Session
 model Session {
-  id             String @id @unique
-  user_id        BigInt
-  active_expires BigInt
-  idle_expires   BigInt
+  id             String @id
+  userId        Int
+  expiresAt     DateTime
 
-  user User @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 
-  @@index([user_id])
+  @@map("sessions")
 }
 
 // Model for Categories
 model Categories {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   code       String    @unique @db.VarChar(50)
   name       String    @db.VarChar(100)
   status     Status    @default(active)
@@ -77,13 +76,13 @@ model Categories {
 
 // Model for Product
 model Product {
-  id            BigInt    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   code          String    @unique @db.VarChar(50)
   name          String    @db.VarChar(100)
   description   String?   @db.Text
   default_price Int       @db.Integer
   status        Status    @default(active)
-  category_id   BigInt
+  category_id   Int
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
@@ -97,7 +96,7 @@ model Product {
 
 // Model for Customer
 model Customer {
-  id         BigInt    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   code       String    @unique @db.VarChar(50)
   name       String    @db.VarChar(100)
   phone      String    @db.VarChar(20)
@@ -114,11 +113,11 @@ model Customer {
 
 // Model for Invoice
 model Invoice {
-  id                 BigInt        @id @default(autoincrement())
+  id                 Int        @id @default(autoincrement())
   code               String        @unique @db.VarChar(50)
   name               String        @db.VarChar(100)
-  customer_id        BigInt
-  created_by_user_id BigInt
+  customer_id        Int
+  created_by_user_id Int
   show_price         Boolean       @default(true)
   status             InvoiceStatus @default(lunas)
   file_location      String[]
@@ -135,10 +134,10 @@ model Invoice {
 
 // Model for InvoiceItem
 model InvoiceItem {
-  id            BigInt    @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   code          String    @unique @db.VarChar(50)
-  invoice_id    BigInt
-  product_id    BigInt
+  invoice_id    Int
+  product_id    Int
   quantity      Int       @db.Integer
   price_at_time Int       @db.Integer
   created_at    DateTime  @default(now())
@@ -153,10 +152,10 @@ model InvoiceItem {
 
 // Model for CustomProductPricing
 model CustomProductPricing {
-  id           BigInt    @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   code         String    @unique @db.VarChar(50)
-  customer_id  BigInt
-  product_id   BigInt
+  customer_id  Int
+  product_id   Int
   custom_price Int       @db.Integer
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
