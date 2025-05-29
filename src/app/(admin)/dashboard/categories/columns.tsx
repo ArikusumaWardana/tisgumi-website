@@ -3,13 +3,10 @@
 import { ActionMenu } from "@/components/ui/action-menu";
 import { Categories } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
+import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 
 export const columns: ColumnDef<Categories>[] = [
-  {
-    header: "ID",
-    accessorKey: "id",
-  },
   {
     header: "Code",
     accessorKey: "code",
@@ -21,7 +18,7 @@ export const columns: ColumnDef<Categories>[] = [
   {
     header: "Created At",
     accessorKey: "created_at",
-    cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+    cell: ({ row }) => formatIndonesianDate(row.original.created_at),
   },
   {
     header: "Actions",
