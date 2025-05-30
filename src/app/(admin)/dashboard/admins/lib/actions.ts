@@ -5,12 +5,23 @@ import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 import bcrypt from "bcrypt";
+import { getUser } from "@/lib/auth";
 
 // Function to create a new admin
 export async function postAdmin(
   _: unknown,
   formData: FormData
 ): Promise<ActionResult> {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, return error
+  if (!user || user.role !== "superadmin") {
+    return {
+      error: "Access denied. Only superadmin can create admins.",
+    };
+  }
+
   const validate = adminSchema.safeParse({
     code: formData.get("code"),
     name: formData.get("name"),
@@ -73,6 +84,16 @@ export async function updateAdmin(
   formData: FormData,
   id: number | undefined
 ): Promise<ActionResult> {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, return error
+  if (!user || user.role !== "superadmin") {
+    return {
+      error: "Access denied. Only superadmin can update admins.",
+    };
+  }
+
   const validate = adminSchema.safeParse({
     code: formData.get("code"),
     name: formData.get("name"),
@@ -130,6 +151,16 @@ export async function deleteAdmin(
   formData: FormData,
   id: number
 ): Promise<ActionResult> {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, return error
+  if (!user || user.role !== "superadmin") {
+    return {
+      error: "Access denied. Only superadmin can delete admins.",
+    };
+  }
+
   // Try to delete the admin
   try {
     await prisma.user.update({

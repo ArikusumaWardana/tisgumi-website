@@ -5,6 +5,7 @@ import FormAdmin from "../../_components/form-admin";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getUser } from "@/lib/auth";
 
 // Type for the params
 type Tparams = {
@@ -16,9 +17,15 @@ interface EditAdminPageProps {
 }
 
 // Edit admin page
-export default async function EditAdminPage({
-  params,
-}: EditAdminPageProps) {
+export default async function EditAdminPage({ params }: EditAdminPageProps) {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to dashboard
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard");
+  }
+
   const data = await getAdminById(params.id);
 
   // If the admin is not found, redirect to the admins page

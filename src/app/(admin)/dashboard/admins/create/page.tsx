@@ -2,8 +2,18 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import FormAdmin from "@/app/(admin)/dashboard/admins/_components/form-admin";
+import { getUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function CreateAdminPage() {
+export default async function CreateAdminPage() {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to dashboard
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard");
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}

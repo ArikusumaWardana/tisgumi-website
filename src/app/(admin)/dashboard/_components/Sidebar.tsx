@@ -15,7 +15,17 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import FormLogout from "./form-logout";
-const sidebarLinks = [
+import { User } from "lucia";
+import { Role } from "@prisma/client";
+
+interface SidebarLink {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  requiredRole?: Role;
+}
+
+const sidebarLinks: SidebarLink[] = [
   {
     title: "Dashboard",
     href: "/dashboard",
@@ -50,16 +60,28 @@ const sidebarLinks = [
     title: "Admins",
     href: "/dashboard/admins",
     icon: UserCog,
+    requiredRole: "superadmin", // Only superadmin can see this menu
   },
 ];
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  user: User;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, user }: SidebarProps) {
   const pathname = usePathname();
+
+  // Filter sidebar links based on user role
+  const filteredLinks = sidebarLinks.filter((link) => {
+    // If link has requiredRole, check if user has that role
+    if (link.requiredRole) {
+      return user.role === link.requiredRole;
+    }
+    // If no requiredRole specified, show to all users
+    return true;
+  });
 
   const handleLinkClick = () => {
     // Close sidebar on mobile view
@@ -97,7 +119,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </div>
 
       <nav className="p-4 space-y-1">
-        {sidebarLinks.map((link) => {
+        {filteredLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
             <Link

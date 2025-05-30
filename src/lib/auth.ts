@@ -32,7 +32,8 @@ export const getUser = cache(
   async (): Promise<
     { user: User; session: Session } | { user: null; session: null }
   > => {
-    const sessionId = (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
+    const sessionId =
+      (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
     if (!sessionId) {
       return {
         user: null,
@@ -63,6 +64,27 @@ export const getUser = cache(
     return result;
   }
 );
+
+// Utility function to check if user has required role
+export async function hasRequiredRole(requiredRole: Role): Promise<boolean> {
+  const { user } = await getUser();
+  return user?.role === requiredRole;
+}
+
+// Utility function to ensure user has required role (throws error if not)
+export async function ensureRole(requiredRole: Role): Promise<User> {
+  const { user } = await getUser();
+
+  if (!user) {
+    throw new Error("Authentication required");
+  }
+
+  if (user.role !== requiredRole) {
+    throw new Error(`Access denied. Required role: ${requiredRole}`);
+  }
+
+  return user;
+}
 
 // Lucia types
 declare module "lucia" {
