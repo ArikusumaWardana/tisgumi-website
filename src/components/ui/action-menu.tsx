@@ -13,6 +13,7 @@ import Link from "next/link";
 interface ActionMenuProps {
   onEdit?: string;
   onView?: string;
+  onContact?: string;
   onDelete?: React.ReactNode;
   customActions?: { label: string; onClick: () => void }[];
 }
@@ -21,6 +22,7 @@ export function ActionMenu({
   onEdit,
   onView,
   onDelete,
+  onContact,
   customActions,
 }: ActionMenuProps) {
   return (
@@ -34,6 +36,11 @@ export function ActionMenu({
       <DropdownMenuContent align="end" forceMount>
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {onContact && (
+          <DropdownMenuItem asChild>
+            <Link target="_blank" href={onContact}>Contact</Link>
+          </DropdownMenuItem>
+        )}
         {onEdit && (
           <DropdownMenuItem asChild>
             <Link href={onEdit}>Edit</Link>
