@@ -5,6 +5,7 @@ import { User } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -26,6 +27,12 @@ export const columns: ColumnDef<User>[] = [
   {
     header: "Role",
     accessorKey: "role",
+    cell: ({ row }) => {
+      const admin = row.original;
+      return (
+        <StatusBadge status={admin.role} />
+      )
+    }
   },
   {
     header: "Created At",
