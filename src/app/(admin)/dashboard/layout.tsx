@@ -7,11 +7,11 @@ export default async function DashboardLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { session } = await getUser();
+  const { session, user } = await getUser();
 
-  if (!session) {
+  if (!session || !user) {
     return redirect("/login");
   }
 
-  return <DashboardWrapper>{children}</DashboardWrapper>;
+  return <DashboardWrapper user={user}>{children}</DashboardWrapper>;
 }

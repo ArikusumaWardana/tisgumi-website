@@ -3,13 +3,18 @@
 import { useState } from "react";
 import { Menu, Bell, ChevronDown } from "lucide-react";
 import FormLogout from "./form-logout";
+import { User } from "lucia";
 
 interface HeaderProps {
   onMenuClick: () => void;
+  user: User;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick, user }: HeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Get first letter of user name for avatar
+  const userInitial = user.name.charAt(0).toUpperCase();
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -22,7 +27,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </button>
         <div className="flex-1" /> {/* Spacer */}
         <div className="flex items-center gap-2">
-
           {/* Profile */}
           <div className="relative">
             <button
@@ -30,9 +34,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
               className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <div className="w-8 h-8 rounded-full bg-[#0f7243] flex items-center justify-center text-white font-medium">
-                A
+                {userInitial}
               </div>
-              <span className="hidden md:block text-sm font-medium">Admin</span>
+              <span className="hidden md:block text-sm font-medium capitalize">
+                {user.name}
+              </span>
               <ChevronDown className="w-4 h-4" />
             </button>
 
@@ -42,7 +48,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 <div className="p-2">
                   <div className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
                     Signed in as{" "}
-                    <span className="font-medium">admin@tisgumi.com</span>
+                    <span className="font-medium">{user.email}</span>
                   </div>
                   <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
                   <FormLogout />
