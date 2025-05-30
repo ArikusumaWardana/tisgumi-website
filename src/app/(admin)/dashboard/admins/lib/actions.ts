@@ -27,8 +27,24 @@ export async function postAdmin(
   // Hash the password input
   const hashedPassword = await bcrypt.hash(validate.data.password, 12);
 
+  // Check if the admin already exists
+  const existingAdmin = await prisma.user.findFirst({
+    where: {
+      code: validate.data.code,
+      email: validate.data.email,
+    },
+  });
+  
+
   // Try to create a new admin
   try {
+
+    // If the admin already exists, return an error message
+    if (existingAdmin) {
+      return { error: "Admin already exists" };
+    }
+
+    // Create the new admin
     await prisma.user.create({
       data: {
         code: validate.data.code,

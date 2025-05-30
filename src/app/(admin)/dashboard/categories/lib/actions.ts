@@ -20,8 +20,21 @@ export async function postCategory(
     return { error: validate.error.errors[0].message };
   }
 
+  // Check if the category already exists
+  const existingCategory = await prisma.categories.findFirst({
+    where: {
+      code: validate.data.code,
+    },
+  });
+
   // Try to create a new category
   try {
+    // If the category already exists, return an error message
+    if (existingCategory) {
+      return { error: "Category already exists" };
+    }
+
+    // Create the new category
     await prisma.categories.create({
       data: {
         code: validate.data.code,

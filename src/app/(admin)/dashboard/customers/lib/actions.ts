@@ -22,8 +22,23 @@ export async function postCustomer(
     return { error: validate.error.errors[0].message };
   }
 
+  // Check if the customer already exists
+  const existingCustomer = await prisma.customer.findFirst({
+    where: {
+      code: validate.data.code,
+    },
+  });
+  
+
   // Try to create a new customer
   try {
+
+    // If the customer already exists, return an error message
+    if (existingCustomer) {
+      return { error: "Customer already exists" };
+    }
+
+    // Create the new customer
     await prisma.customer.create({
       data: {
         code: validate.data.code,
