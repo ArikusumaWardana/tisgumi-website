@@ -22,17 +22,18 @@ export async function postCustomer(
     return { error: validate.error.errors[0].message };
   }
 
+  // Format phone number with +62 prefix
+  const formattedPhone = `+62${validate.data.phone}`;
+
   // Check if the customer already exists
   const existingCustomer = await prisma.customer.findFirst({
     where: {
       code: validate.data.code,
     },
   });
-  
 
   // Try to create a new customer
   try {
-
     // If the customer already exists, return an error message
     if (existingCustomer) {
       return { error: "Customer already exists" };
@@ -43,7 +44,7 @@ export async function postCustomer(
       data: {
         code: validate.data.code,
         name: validate.data.name,
-        phone: validate.data.phone,
+        phone: formattedPhone,
         status: validate.data.status,
       },
     });
@@ -76,6 +77,9 @@ export async function updateCustomer(
     return { error: validate.error.errors[0].message };
   }
 
+  // Format phone number with +62 prefix
+  const formattedPhone = `+62${validate.data.phone}`;
+
   // If the id is undefined, return an error message
   if (id === undefined) {
     return {
@@ -92,7 +96,7 @@ export async function updateCustomer(
       data: {
         code: validate.data.code,
         name: validate.data.name,
-        phone: validate.data.phone,
+        phone: formattedPhone,
         status: validate.data.status,
         updated_at: new Date(),
       },
@@ -113,23 +117,22 @@ export async function deleteCustomer(
   formData: FormData,
   id: number
 ): Promise<ActionResult> {
-
-     // Try to delete the customer 
-     try {
-        await prisma.customer.update({
-            where: {
-                id: id
-             }, 
-             data: {
-                deleted_at: new Date()
-             }
-        })
-     } catch (error) {
-        console.log(error);
-        return {
-            error: "Failed to delete customer"
-        }
-     } 
+  // Try to delete the customer
+  try {
+    await prisma.customer.update({
+      where: {
+        id: id,
+      },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return {
+      error: "Failed to delete customer",
+    };
+  }
 
   return redirect(`/dashboard/customers`);
 }

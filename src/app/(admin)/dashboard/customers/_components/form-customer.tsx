@@ -4,7 +4,7 @@ import { AlertCircle, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
@@ -45,6 +45,45 @@ export default function FormCustomer({
   type = "create",
   data = null,
 }: FormCustomerProps) {
+  // Phone number state and formatting
+  const [phoneDisplay, setPhoneDisplay] = useState<string>("");
+  const [phoneValue, setPhoneValue] = useState<string>("");
+
+  // Initialize phone values
+  useEffect(() => {
+    if (data?.phone) {
+      // Remove +62 prefix if exists for editing
+      const cleanPhone = data.phone.startsWith("+62")
+        ? data.phone.slice(3)
+        : data.phone;
+      setPhoneDisplay(cleanPhone);
+      setPhoneValue(cleanPhone);
+    }
+  }, [data?.phone]);
+
+  // Phone formatting function
+  const formatPhone = (value: string) => {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, "");
+
+    // If starts with 0, remove it
+    const cleanDigits = digits.startsWith("0") ? digits.slice(1) : digits;
+
+    // Limit to reasonable phone number length (12 digits max for Indonesian numbers)
+    const limitedDigits = cleanDigits.slice(0, 12);
+
+    return limitedDigits;
+  };
+
+  // Handle phone input change
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formattedPhone = formatPhone(inputValue);
+
+    setPhoneDisplay(formattedPhone);
+    setPhoneValue(formattedPhone);
+  };
+
   // Update the customer with the id
   const updateCustomerWithId = (_: unknown, formData: FormData) =>
     updateCustomer(_, formData, data?.id);
@@ -111,24 +150,31 @@ export default function FormCustomer({
             <Label htmlFor="phone">
               Phone <span className="text-red-600">*</span>
             </Label>
-            <Input
-              id="phone"
-              name="phone"
-              type="text"
-              placeholder="e.g., 081234567890"
-              required
-              onKeyPress={(e) => {
-                // Only allow numbers
-                if (!/[0-9]/.test(e.key)) {
-                  e.preventDefault();
-                }
-              }}
-              maxLength={15}
-              defaultValue={data?.phone}
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span className="text-gray-500 text-sm">+62</span>
+              </div>
+              <Input
+                id="phone-display"
+                type="text"
+                placeholder="81234567890"
+                required
+                value={phoneDisplay}
+                onChange={handlePhoneChange}
+                className="pl-12"
+                maxLength={12}
+              />
+              {/* Hidden input to store the actual value for form submission */}
+              <input type="hidden" name="phone" value={phoneValue} />
+            </div>
             <p className="text-xs text-gray-500">
-              Phone number for the customer
+              Indonesian phone number (without leading 0)
             </p>
+            {phoneDisplay && (
+              <p className="text-xs text-green-600">
+                Will be saved as: +62{phoneDisplay}
+              </p>
+            )}
           </div>
 
           {/* Status Field */}
@@ -136,7 +182,11 @@ export default function FormCustomer({
             <Label htmlFor="status">
               Status <span className="text-red-600">*</span>
             </Label>
-            <Select name="status" required defaultValue={data?.status || "active"}>
+            <Select
+              name="status"
+              required
+              defaultValue={data?.status || "active"}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a status" />
               </SelectTrigger>

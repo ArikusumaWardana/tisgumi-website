@@ -27,6 +27,9 @@ export async function postAdmin(
   // Hash the password input
   const hashedPassword = await bcrypt.hash(validate.data.password, 12);
 
+  // Format phone number with +62 prefix
+  const formattedPhone = `+62${validate.data.phone}`;
+
   // Check if the admin already exists
   const existingAdmin = await prisma.user.findFirst({
     where: {
@@ -34,11 +37,9 @@ export async function postAdmin(
       email: validate.data.email,
     },
   });
-  
 
   // Try to create a new admin
   try {
-
     // If the admin already exists, return an error message
     if (existingAdmin) {
       return { error: "Admin already exists" };
@@ -50,7 +51,7 @@ export async function postAdmin(
         code: validate.data.code,
         name: validate.data.name,
         email: validate.data.email,
-        phone: validate.data.phone,
+        phone: formattedPhone,
         password: hashedPassword,
         role: "admin",
       },
@@ -75,12 +76,21 @@ export async function updateAdmin(
   const validate = adminSchema.safeParse({
     code: formData.get("code"),
     name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    password: formData.get("password"),
   });
 
   // If the validation fails, return an error message
   if (!validate.success) {
     return { error: validate.error.errors[0].message };
   }
+
+  // Hash the password input
+  const hashedPassword = await bcrypt.hash(validate.data.password, 12);
+
+  // Format phone number with +62 prefix
+  const formattedPhone = `+62${validate.data.phone}`;
 
   // If the id is undefined, return an error message
   if (id === undefined) {
@@ -99,8 +109,8 @@ export async function updateAdmin(
         code: validate.data.code,
         name: validate.data.name,
         email: validate.data.email,
-        phone: validate.data.phone,
-        password: validate.data.password,
+        phone: formattedPhone,
+        password: hashedPassword,
         updated_at: new Date(),
       },
     });
@@ -120,23 +130,22 @@ export async function deleteAdmin(
   formData: FormData,
   id: number
 ): Promise<ActionResult> {
-
-     // Try to delete the admin 
-     try {
-        await prisma.user.update({
-            where: {
-                id: id
-             }, 
-             data: {
-                deleted_at: new Date()
-             }
-        })
-     } catch (error) {
-        console.log(error);
-        return {
-            error: "Failed to delete admin"
-        }
-     } 
+  // Try to delete the admin
+  try {
+    await prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return {
+      error: "Failed to delete admin",
+    };
+  }
 
   return redirect(`/dashboard/admins`);
 }
