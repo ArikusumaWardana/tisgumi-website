@@ -29,8 +29,6 @@ function SubmitButton() {
 
 export default function LoginForm() {
      const [state, formAction] = useActionState(LoginAction, initialState)
-
-    console.log(state)
   
      return (
        <form className="mt-8 space-y-6" action={formAction}>
