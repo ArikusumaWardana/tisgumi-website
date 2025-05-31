@@ -178,7 +178,7 @@ export default function FormCustomer({
           </div>
 
           {/* Status Field */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full">
             <Label htmlFor="status">
               Status <span className="text-red-600">*</span>
             </Label>
@@ -187,10 +187,10 @@ export default function FormCustomer({
               required
               defaultValue={data?.status || "active"}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-full">
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
