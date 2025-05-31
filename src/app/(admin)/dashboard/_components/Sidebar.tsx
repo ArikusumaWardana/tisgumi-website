@@ -55,6 +55,7 @@ const sidebarLinks: SidebarLink[] = [
     title: "Pricing",
     href: "/dashboard/pricing",
     icon: CreditCard,
+    requiredRole: "superadmin",
   },
   {
     title: "Admins",
