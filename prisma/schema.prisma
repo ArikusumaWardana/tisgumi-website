@@ -14,17 +14,20 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Role for User
 enum Role {
   admin
   superadmin
 }
 
+// Status for Product, Customer, and User
 enum Status {
   active
   inactive
 }
 
-enum InvoiceStatus {
+// Status for Order
+enum OrderPaymentStatus {
   lunas
   belum_lunas
 }
@@ -42,29 +45,29 @@ model User {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  sessions   Session[]
-  invoices_created Invoice[] @relation("created_by_user_id")
+  sessions       Session[]
+  orders_created Order[]   @relation("created_by_user_id")
 
   @@map("users")
 }
 
 // Model for Session
 model Session {
-  id             String @id
-  userId        Int
-  expiresAt     DateTime
+  id        String   @id
+  userId    Int
+  expiresAt DateTime
 
   user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 
+  @@index([userId])
   @@map("sessions")
 }
 
 // Model for Categories
 model Categories {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   code       String    @unique @db.VarChar(50)
   name       String    @db.VarChar(100)
-  status     Status    @default(active)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
@@ -76,11 +79,10 @@ model Categories {
 
 // Model for Product
 model Product {
-  id            Int    @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   code          String    @unique @db.VarChar(50)
   name          String    @db.VarChar(100)
-  description   String?   @db.Text
-  default_price Int       @db.Integer
+  default_price Int       @default(0) @db.Integer
   status        Status    @default(active)
   category_id   Int
   created_at    DateTime  @default(now())
@@ -88,15 +90,16 @@ model Product {
   deleted_at    DateTime?
 
   category      Categories             @relation(fields: [category_id], references: [id], onDelete: Cascade)
-  invoice_items InvoiceItem[]
+  order_items   OrderItem[]
   custom_prices CustomProductPricing[]
 
+  @@index([category_id])
   @@map("products")
 }
 
 // Model for Customer
 model Customer {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   code       String    @unique @db.VarChar(50)
   name       String    @db.VarChar(100)
   phone      String    @db.VarChar(20)
@@ -105,38 +108,53 @@ model Customer {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  invoices      Invoice[]
+  orders        Order[]
   custom_prices CustomProductPricing[]
 
   @@map("customers")
 }
 
-// Model for Invoice
-model Invoice {
-  id                 Int        @id @default(autoincrement())
-  code               String        @unique @db.VarChar(50)
-  name               String        @db.VarChar(100)
+// Model for Orders
+model Order {
+  id                 Int                @id @default(autoincrement())
+  code               String             @unique @db.VarChar(50)
+  name               String             @db.VarChar(100)
   customer_id        Int
   created_by_user_id Int
-  show_price         Boolean       @default(true)
-  status             InvoiceStatus @default(lunas)
-  file_location      String[]
-  created_at         DateTime      @default(now())
-  updated_at         DateTime      @updatedAt
+  status             OrderPaymentStatus @default(lunas)
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @updatedAt
   deleted_at         DateTime?
 
-  customer        Customer      @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  created_by_user User          @relation("created_by_user_id", fields: [created_by_user_id], references: [id])
-  invoice_items   InvoiceItem[]
+  customer        Customer    @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  created_by_user User        @relation("created_by_user_id", fields: [created_by_user_id], references: [id])
+  order_items     OrderItem[]
+  invoices        Invoice[]
 
+  @@index([customer_id])
+  @@index([created_by_user_id])
+  @@map("orders")
+}
+
+// Model for Invoice
+model Invoice {
+  id         Int      @id @default(autoincrement())
+  order_id   Int
+  file_url   String   @db.VarChar(255) // atau lokasi di Supabase bucket
+  show_price Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([order_id])
   @@map("invoices")
 }
 
-// Model for InvoiceItem
-model InvoiceItem {
-  id            Int    @id @default(autoincrement())
+// Model for OrderItem
+model OrderItem {
+  id            Int       @id @default(autoincrement())
   code          String    @unique @db.VarChar(50)
-  invoice_id    Int
+  order_id      Int
   product_id    Int
   quantity      Int       @db.Integer
   price_at_time Int       @db.Integer
@@ -144,15 +162,17 @@ model InvoiceItem {
   updated_at    DateTime  @updatedAt
   deleted_at    DateTime?
 
-  invoice Invoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
-  @@map("invoice_items")
+  @@index([order_id])
+  @@index([product_id])
+  @@map("order_items")
 }
 
 // Model for CustomProductPricing
 model CustomProductPricing {
-  id           Int    @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   code         String    @unique @db.VarChar(50)
   customer_id  Int
   product_id   Int
@@ -164,5 +184,7 @@ model CustomProductPricing {
   customer Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   product  Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
+  @@index([customer_id])
+  @@index([product_id])
   @@map("custom_product_pricings")
 }
