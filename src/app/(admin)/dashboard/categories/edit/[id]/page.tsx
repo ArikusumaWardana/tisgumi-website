@@ -12,14 +12,16 @@ type Tparams = {
 };
 
 interface EditCategoryPageProps {
-  params: Tparams;
+  params: Promise<Tparams>;
 }
 
 // Edit category page
 export default async function EditCategoryPage({
   params,
 }: EditCategoryPageProps) {
-  const data = await getCategoryById(params.id);
+  // Await params before using its properties
+  const resolvedParams = await params;
+  const data = await getCategoryById(resolvedParams.id);
 
   // If the category is not found, redirect to the categories page
   if (!data) {

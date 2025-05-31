@@ -13,7 +13,7 @@ type Tparams = {
 };
 
 interface EditAdminPageProps {
-  params: Tparams;
+  params: Promise<Tparams>;
 }
 
 // Edit admin page
@@ -26,7 +26,9 @@ export default async function EditAdminPage({ params }: EditAdminPageProps) {
     return redirect("/dashboard");
   }
 
-  const data = await getAdminById(params.id);
+  // Await params before using its properties
+  const resolvedParams = await params;
+  const data = await getAdminById(resolvedParams.id);
 
   // If the admin is not found, redirect to the admins page
   if (!data) {

@@ -12,14 +12,16 @@ type Tparams = {
 };
 
 interface EditCustomerPageProps {
-  params: Tparams;
+  params: Promise<Tparams>;
 }
 
 // Edit customer page
 export default async function EditCustomerPage({
   params,
 }: EditCustomerPageProps) {
-  const data = await getCustomerById(params.id);
+  // Await params before using its properties
+  const resolvedParams = await params;
+  const data = await getCustomerById(resolvedParams.id);
 
   // If the customer is not found, redirect to the customers page
   if (!data) {
