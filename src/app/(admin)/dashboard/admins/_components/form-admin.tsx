@@ -117,7 +117,7 @@ export default function FormAdmin({
               defaultValue={data?.code}
             />
             <p className="text-xs text-gray-500">
-              Unique identifier for the admin
+              {`Unique identifier for the admin`}
             </p>
           </div>
 
@@ -134,7 +134,9 @@ export default function FormAdmin({
               required
               defaultValue={data?.name}
             />
-            <p className="text-xs text-gray-500">Display name for the admin</p>
+            <p className="text-xs text-gray-500">
+              {`Display name for the admin`}
+            </p>
           </div>
 
           {/* Email Field */}
@@ -150,7 +152,7 @@ export default function FormAdmin({
               required
               defaultValue={data?.email}
             />
-            <p className="text-xs text-gray-500">Email for the admin</p>
+            <p className="text-xs text-gray-500">{`Email for the admin`}</p>
           </div>
 
           {/* Phone Field */}
@@ -176,11 +178,11 @@ export default function FormAdmin({
               <input type="hidden" name="phone" value={phoneValue} />
             </div>
             <p className="text-xs text-gray-500">
-              Indonesian phone number (without leading 0)
+              {`Indonesian phone number (without leading 0)`}
             </p>
             {phoneDisplay && (
               <p className="text-xs text-green-600">
-                Will be saved as: +62{phoneDisplay}
+                {`Will be saved as: +62${phoneDisplay}`}
               </p>
             )}
           </div>
@@ -197,7 +199,7 @@ export default function FormAdmin({
               placeholder="e.g., **********"
               required
             />
-            <p className="text-xs text-gray-500">Password for the admin</p>
+            <p className="text-xs text-gray-500">{`Password for the admin`}</p>
           </div>
         </div>
       </div>

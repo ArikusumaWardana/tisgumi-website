@@ -12,7 +12,7 @@ export default function Loading() {
       {/* Loading Text */}
       <div className="flex flex-col items-center space-y-2">
         <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-          Loading Pricing
+          Loading Custom Product Pricings
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Please wait while we fetch the data...

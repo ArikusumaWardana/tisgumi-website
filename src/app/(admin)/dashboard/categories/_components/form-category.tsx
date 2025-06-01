@@ -78,7 +78,7 @@ export default function FormCategory({
               defaultValue={data?.code}
             />
             <p className="text-xs text-gray-500">
-              Unique identifier for the category
+              {`Unique identifier for the category`}
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export default function FormCategory({
               defaultValue={data?.name}
             />
             <p className="text-xs text-gray-500">
-              Display name for the category
+              {`Display name for the category`}
             </p>
           </div>
         </div>
