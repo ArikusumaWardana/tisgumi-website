@@ -122,6 +122,7 @@ model Order {
   customer_id        Int
   created_by_user_id Int
   status             OrderPaymentStatus @default(lunas)
+  payment_date       DateTime?
   created_at         DateTime           @default(now())
   updated_at         DateTime           @updatedAt
   deleted_at         DateTime?
