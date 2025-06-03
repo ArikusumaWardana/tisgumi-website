@@ -4,11 +4,11 @@ import { AlertCircle, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
-import { postProduct, updateProduct } from "../lib/actions";
+import { postProduct, updateProduct, getProductsCount } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
 import { Product } from "@prisma/client";
@@ -67,6 +67,35 @@ export default function FormProduct({
     data?.default_price ? formatToRupiah(data.default_price.toString()) : ""
   );
 
+  // State for code input
+  const [codeValue, setCodeValue] = useState<string>(data?.code || "");
+
+  // Generate product code function
+  const generateProductCode = async () => {
+    try {
+      // Fetch count from actions
+      const count = await getProductsCount();
+      const nextNumber = count + 1;
+      const formattedNumber = nextNumber.toString().padStart(3, "0");
+      const generatedCode = `PRD-${formattedNumber}`;
+      setCodeValue(generatedCode);
+    } catch (error) {
+      // Fallback jika terjadi error
+      const timestamp = Date.now();
+      const codeNumber = timestamp % 1000;
+      const formattedNumber = codeNumber.toString().padStart(3, "0");
+      const generatedCode = `PRD-${formattedNumber}`;
+      setCodeValue(generatedCode);
+    }
+  };
+
+  // Auto generate code saat component mount untuk mode create
+  useEffect(() => {
+    if (type === "create" && !codeValue) {
+      generateProductCode();
+    }
+  }, [type]);
+
   // Update the product with the id
   const updateProductWithId = (_: unknown, formData: FormData) =>
     updateProduct(_, formData, data?.id);
@@ -98,7 +127,6 @@ export default function FormProduct({
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Code Field */}
-
           <div className="space-y-2">
             <Label htmlFor="code">
               Product Code <span className="text-red-600">*</span>
@@ -109,7 +137,8 @@ export default function FormProduct({
               type="text"
               placeholder="e.g., PRD-001"
               required
-              defaultValue={data?.code}
+              value={codeValue}
+              onChange={(e) => setCodeValue(e.target.value)}
             />
             <p className="text-xs text-gray-500">
               Unique identifier for the product

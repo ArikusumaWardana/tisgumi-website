@@ -5,6 +5,23 @@ import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 
+// Function to get count of categories for auto-generation
+export async function getCategoriesCount() {
+  try {
+    // Get count of categories (excluding deleted ones)
+    const count = await prisma.categories.count({
+      where: {
+        deleted_at: null,
+      },
+    });
+
+    return count;
+  } catch (error) {
+    console.error("Error fetching categories count:", error);
+    return 0;
+  }
+}
+
 // Function to create a new category
 export async function postCategory(
   _: unknown,
@@ -103,23 +120,22 @@ export async function deleteCategory(
   formData: FormData,
   id: number
 ): Promise<ActionResult> {
-
-     // Try to delete the category 
-     try {
-        await prisma.categories.update({
-            where: {
-                id: id
-             }, 
-             data: {
-                deleted_at: new Date()
-             }
-        })
-     } catch (error) {
-        console.log(error);
-        return {
-            error: "Failed to delete category"
-        }
-     } 
+  // Try to delete the category
+  try {
+    await prisma.categories.update({
+      where: {
+        id: id,
+      },
+      data: {
+        deleted_at: new Date(),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return {
+      error: "Failed to delete category",
+    };
+  }
 
   return redirect(`/dashboard/categories`);
 }

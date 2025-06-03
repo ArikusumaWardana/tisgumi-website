@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Save } from "lucide-react";
+import { AlertCircle, Save, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
-import { postCustomer, updateCustomer } from "../lib/actions";
+import {
+  postCustomer,
+  updateCustomer,
+  getCustomersCount,
+} from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
 import { Customer } from "@prisma/client";
@@ -48,6 +52,35 @@ export default function FormCustomer({
   // Phone number state and formatting
   const [phoneDisplay, setPhoneDisplay] = useState<string>("");
   const [phoneValue, setPhoneValue] = useState<string>("");
+
+  // State for code input
+  const [codeValue, setCodeValue] = useState<string>(data?.code || "");
+
+  // Generate customer code function
+  const generateCustomerCode = async () => {
+    try {
+      // Fetch count from actions
+      const count = await getCustomersCount();
+      const nextNumber = count + 1;
+      const formattedNumber = nextNumber.toString().padStart(3, "0");
+      const generatedCode = `CUS-${formattedNumber}`;
+      setCodeValue(generatedCode);
+    } catch (error) {
+      // Fallback jika terjadi error
+      const timestamp = Date.now();
+      const codeNumber = timestamp % 1000;
+      const formattedNumber = codeNumber.toString().padStart(3, "0");
+      const generatedCode = `CUS-${formattedNumber}`;
+      setCodeValue(generatedCode);
+    }
+  };
+
+  // Auto generate code saat component mount untuk mode create
+  useEffect(() => {
+    if (type === "create" && !codeValue) {
+      generateCustomerCode();
+    }
+  }, [type]);
 
   // Initialize phone values
   useEffect(() => {
@@ -109,7 +142,6 @@ export default function FormCustomer({
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Code Field */}
-
           <div className="space-y-2">
             <Label htmlFor="code">
               Customer Code <span className="text-red-600">*</span>
@@ -120,7 +152,8 @@ export default function FormCustomer({
               type="text"
               placeholder="e.g., CUS-001"
               required
-              defaultValue={data?.code}
+              value={codeValue}
+              onChange={(e) => setCodeValue(e.target.value)}
             />
             <p className="text-xs text-gray-500">
               Unique identifier for the customer

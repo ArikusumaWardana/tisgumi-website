@@ -5,6 +5,23 @@ import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 
+// Function to get count of products for auto-generation
+export async function getProductsCount() {
+  try {
+    // Get count of products (excluding deleted ones)
+    const count = await prisma.product.count({
+      where: {
+        deleted_at: null,
+      },
+    });
+
+    return count;
+  } catch (error) {
+    console.error("Error fetching products count:", error);
+    return 0;
+  }
+}
+
 // Function to create a new product
 export async function postProduct(
   _: unknown,

@@ -5,6 +5,23 @@ import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 
+// Function to get count of customers for auto-generation
+export async function getCustomersCount() {
+  try {
+    // Get count of customers (excluding deleted ones)
+    const count = await prisma.customer.count({
+      where: {
+        deleted_at: null,
+      },
+    });
+
+    return count;
+  } catch (error) {
+    console.error("Error fetching customers count:", error);
+    return 0;
+  }
+}
+
 // Function to create a new customer
 export async function postCustomer(
   _: unknown,
