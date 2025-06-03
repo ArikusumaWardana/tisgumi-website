@@ -1,19 +1,34 @@
 "use client";
 
 import { ActionMenu } from "@/components/ui/action-menu";
-import { Product, Categories } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatToRupiah } from "@/utils/currency";
 
-// Type for Product with Category relation
-type ProductWithCategory = Product & {
-  category: Categories;
+// Type for product with category based on our data structure
+type Product = {
+  id: number;
+  code: string;
+  name: string;
+  default_price: number;
+  status: string;
+  category_id: number;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+  category: {
+    id: number;
+    code: string;
+    name: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+  };
 };
 
-export const columns: ColumnDef<ProductWithCategory>[] = [
+export const columns: ColumnDef<Product>[] = [
   {
     header: "Code",
     accessorKey: "code",

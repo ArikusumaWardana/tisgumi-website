@@ -1,7 +1,29 @@
 import prisma from "../../../../../../lib/prisma";
 import { getUser } from "@/lib/auth";
+import { PaginationInfo } from "@/components/ui/pagination";
+import { Role } from "@prisma/client";
 
-// Function to get all admins
+interface GetAdminsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+interface GetAdminsResult {
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+    email: string;
+    role: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+  }>;
+  pagination: PaginationInfo;
+}
+
+// Function to get all admins (backward compatibility)
 export async function getAdmins() {
   try {
     // Check user role for access control
@@ -16,7 +38,7 @@ export async function getAdmins() {
     const admins = await prisma.user.findMany({
       where: {
         deleted_at: null,
-        role: "admin",
+        role: Role.admin,
       },
       orderBy: {
         created_at: "desc",
@@ -28,6 +50,82 @@ export async function getAdmins() {
     // If there is an error, return an empty array
     console.error("Error fetching admins:", error);
     return [];
+  }
+}
+
+// Function to get paginated admins
+export async function getAdminsPaginated({
+  page = 1,
+  limit = 10,
+  search,
+}: GetAdminsParams = {}): Promise<GetAdminsResult> {
+  try {
+    // Check user role for access control
+    const { user } = await getUser();
+
+    // If user is not superadmin, return empty result
+    if (!user || user.role !== "superadmin") {
+      return {
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where = {
+      deleted_at: null,
+      role: Role.admin,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { email: { contains: search, mode: "insensitive" as const } },
+          { code: { contains: search, mode: "insensitive" as const } },
+        ],
+      }),
+    };
+
+    // Execute queries in parallel for better performance
+    const [admins, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy: {
+          created_at: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: admins,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    return {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      },
+    };
   }
 }
 

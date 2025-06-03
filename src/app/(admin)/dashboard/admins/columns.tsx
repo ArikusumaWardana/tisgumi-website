@@ -1,13 +1,24 @@
 "use client";
 
 import { ActionMenu } from "@/components/ui/action-menu";
-import { User } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
 
-export const columns: ColumnDef<User>[] = [
+// Type that matches the actual data structure from getAdminsPaginated
+type AdminData = {
+  id: number;
+  code: string;
+  name: string;
+  email: string;
+  role: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+};
+
+export const columns: ColumnDef<AdminData>[] = [
   {
     header: "Code",
     accessorKey: "code",
@@ -21,18 +32,12 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "email",
   },
   {
-    header: "Phone",
-    accessorKey: "phone",
-  },
-  {
     header: "Role",
     accessorKey: "role",
     cell: ({ row }) => {
       const admin = row.original;
-      return (
-        <StatusBadge status={admin.role} />
-      )
-    }
+      return <StatusBadge status={admin.role} />;
+    },
   },
   {
     header: "Created At",

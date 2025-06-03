@@ -6,13 +6,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 
-// Define the order type based on what getOrders returns
+// Define the order type based on what getOrdersPaginated returns
 type OrderWithDetails = {
   id: number;
   code: string;
   customer_id: number;
   created_by_user_id: number;
-  status: "lunas" | "belum_lunas";
+  status: string;
   payment_date: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -22,12 +22,53 @@ type OrderWithDetails = {
     code: string;
     name: string;
     phone: string;
+    status: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
   };
   created_by_user: {
     id: number;
     name: string;
     code: string;
   };
+  order_items: Array<{
+    id: number;
+    code: string;
+    order_id: number;
+    product_id: number;
+    quantity: number;
+    price_at_time: number;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+    product: {
+      id: number;
+      code: string;
+      name: string;
+      default_price: number;
+      status: string;
+      category_id: number;
+      created_at: Date;
+      updated_at: Date;
+      deleted_at: Date | null;
+      category: {
+        id: number;
+        code: string;
+        name: string;
+        created_at: Date;
+        updated_at: Date;
+        deleted_at: Date | null;
+      };
+    };
+  }>;
+  invoices: Array<{
+    id: number;
+    order_id: number;
+    file_url: string;
+    show_price: boolean;
+    created_at: Date;
+  }>;
   total_amount: number;
   total_items: number;
 };

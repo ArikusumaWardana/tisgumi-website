@@ -1,6 +1,29 @@
 import prisma from "../../../../../../lib/prisma";
+import { PaginationInfo } from "@/components/ui/pagination";
 
-// Function to get all customers who have custom product pricings
+interface GetCustomersWithPricingParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+interface GetCustomersWithPricingResult {
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+    phone: string;
+    status: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+    custom_prices: Array<any>;
+    custom_pricing_count: number;
+  }>;
+  pagination: PaginationInfo;
+}
+
+// Function to get all customers who have custom product pricings (backward compatibility)
 export async function getCustomersWithPricing() {
   try {
     // Get customers who have custom product pricings
@@ -36,6 +59,86 @@ export async function getCustomersWithPricing() {
     // If there is an error, return an empty array
     console.error("Error fetching customers with custom pricing:", error);
     return [];
+  }
+}
+
+// Function to get paginated customers with pricing
+export async function getCustomersWithPricingPaginated({
+  page = 1,
+  limit = 10,
+  search,
+}: GetCustomersWithPricingParams = {}): Promise<GetCustomersWithPricingResult> {
+  try {
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where = {
+      deleted_at: null,
+      custom_prices: {
+        some: {
+          deleted_at: null,
+        },
+      },
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { code: { contains: search, mode: "insensitive" as const } },
+          { phone: { contains: search, mode: "insensitive" as const } },
+        ],
+      }),
+    };
+
+    // Execute queries in parallel for better performance
+    const [customers, total] = await Promise.all([
+      prisma.customer.findMany({
+        where,
+        include: {
+          custom_prices: {
+            where: {
+              deleted_at: null,
+            },
+            include: {
+              product: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.customer.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    // Add custom pricing count
+    const customersWithCount = customers.map((customer) => ({
+      ...customer,
+      custom_pricing_count: customer.custom_prices.length,
+    }));
+
+    return {
+      data: customersWithCount,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching customers with custom pricing:", error);
+    return {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      },
+    };
   }
 }
 

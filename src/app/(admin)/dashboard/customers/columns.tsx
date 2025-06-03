@@ -1,13 +1,24 @@
 "use client";
 
 import { ActionMenu } from "@/components/ui/action-menu";
-import { Customer } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
 
-export const columns: ColumnDef<Customer>[] = [
+// Type that matches the actual data structure from getCustomersPaginated
+type CustomerData = {
+  id: number;
+  code: string;
+  name: string;
+  phone: string;
+  status: string;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+};
+
+export const columns: ColumnDef<CustomerData>[] = [
   {
     header: "Code",
     accessorKey: "code",
@@ -25,9 +36,7 @@ export const columns: ColumnDef<Customer>[] = [
     accessorKey: "status",
     cell: ({ row }) => {
       const customer = row.original;
-      return (
-        <StatusBadge status={customer.status} />
-      )
+      return <StatusBadge status={customer.status} />;
     },
   },
   {

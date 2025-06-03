@@ -1,41 +1,119 @@
-import prisma  from "../../../../../../lib/prisma";
+import prisma from "../../../../../../lib/prisma";
+import { PaginationInfo } from "@/components/ui/pagination";
 
-// Function to get all customers
-export async function getCustomers() {
-     try {
-          // Get all customers from the database
-          const customers = await prisma.customer.findMany({
-               where: {
-                    deleted_at: null
-               },
-               orderBy: {
-                    created_at: "desc"
-               }
-          })
-          // Return the customers
-          return customers;
-     } catch (error) {
-          // If there is an error, return an empty array
-          console.error("Error fetching customers:", error);
-          return [];
-     }
+interface GetCustomersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
 }
 
-// Function to get a customer by id
+interface GetCustomersResult {
+  data: Array<{
+    id: number;
+    code: string;
+    name: string;
+    phone: string;
+    status: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+  }>;
+  pagination: PaginationInfo;
+}
+
+// Function to get all customers (backward compatibility)
+export async function getCustomers() {
+  try {
+    // Get all customers from the database
+    const customers = await prisma.customer.findMany({
+      where: {
+        deleted_at: null,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+    // Return the customers
+    return customers;
+  } catch (error) {
+    // If there is an error, return an empty array
+    console.error("Error fetching customers:", error);
+    return [];
+  }
+}
+
+// Function to get paginated customers
+export async function getCustomersPaginated({
+  page = 1,
+  limit = 10,
+  search,
+}: GetCustomersParams = {}): Promise<GetCustomersResult> {
+  try {
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where = {
+      deleted_at: null,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { code: { contains: search, mode: "insensitive" as const } },
+          { phone: { contains: search, mode: "insensitive" as const } },
+        ],
+      }),
+    };
+
+    // Execute queries in parallel for better performance
+    const [customers, total] = await Promise.all([
+      prisma.customer.findMany({
+        where,
+        orderBy: {
+          created_at: "desc",
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.customer.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: customers,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    return {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
+}
+
+// Function to get single customer by ID (optimized)
 export async function getCustomerById(id: string) {
-     try {
-          // Get the customer by id
-          const customer = await prisma.customer.findFirst({
-               where: {
-                    id: Number.parseInt(id),
-                    deleted_at: null
-               }
-          })
-          // Return the customer
-          return customer;
-     } catch (error) {
-          // If there is an error, return null
-          console.error("Error fetching customer:", error);
-          return null;
-     }
+  try {
+    const customer = await prisma.customer.findFirst({
+      where: {
+        id: Number.parseInt(id),
+        deleted_at: null,
+      },
+    });
+
+    return customer;
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    return null;
+  }
 }
