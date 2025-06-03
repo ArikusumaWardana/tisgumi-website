@@ -5,55 +5,6 @@ import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 import { getUser } from "@/lib/auth";
 
-// Function to get all customers for select options
-export async function getCustomers() {
-  try {
-    const customers = await prisma.customer.findMany({
-      where: {
-        deleted_at: null,
-        status: "active",
-      },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-    return customers;
-  } catch (error) {
-    console.error("Error fetching customers:", error);
-    return [];
-  }
-}
-
-// Function to get all products for select options
-export async function getProducts() {
-  try {
-    const products = await prisma.product.findMany({
-      where: {
-        deleted_at: null,
-        status: "active",
-      },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        default_price: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-    return products;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return [];
-  }
-}
-
 // Function to generate next order code (server action)
 export async function generateOrderCode() {
   try {

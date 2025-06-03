@@ -151,3 +151,28 @@ export async function deleteProduct(
 
   return redirect(`/dashboard/products`);
 }
+
+// Function to get all products for select options
+export async function getProductsForSelect() {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        deleted_at: null,
+        status: "active",
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        default_price: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+    return products;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+}
