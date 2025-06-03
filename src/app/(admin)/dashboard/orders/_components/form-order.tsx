@@ -70,6 +70,7 @@ export default function FormOrder() {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([
     { product_id: 0, quantity: 1, price: 0 },
   ]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // State for form action
   const [state, formAction] = useActionState(createOrder, initialState);
@@ -77,17 +78,38 @@ export default function FormOrder() {
   // Fetch customers, products, and generate order code on component mount
   useEffect(() => {
     const fetchData = async () => {
-      const [customersData, productsData, newOrderCode] = await Promise.all([
-        getCustomers(),
-        getProducts(),
-        generateOrderCode(),
-      ]);
-      setCustomers(customersData);
-      setProducts(productsData);
-      setOrderCode(newOrderCode);
+      try {
+        const [customersData, productsData, newOrderCode] = await Promise.all([
+          getCustomers(),
+          getProducts(),
+          generateOrderCode(),
+        ]);
+        setCustomers(customersData || []);
+        setProducts(productsData || []);
+        setOrderCode(newOrderCode || "");
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setCustomers([]);
+        setProducts([]);
+        setOrderCode("");
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchData();
   }, []);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading order form...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Add new order item
   const addOrderItem = () => {
@@ -222,7 +244,7 @@ export default function FormOrder() {
                 <SelectValue placeholder="Select a customer" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map((customer) => (
+                {(customers || []).map((customer) => (
                   <SelectItem key={customer.id} value={customer.id.toString()}>
                     {customer.name} ({customer.code})
                   </SelectItem>
@@ -318,7 +340,7 @@ export default function FormOrder() {
                         <SelectValue placeholder="Select product" />
                       </SelectTrigger>
                       <SelectContent>
-                        {products.map((product) => (
+                        {(products || []).map((product) => (
                           <SelectItem
                             key={product.id}
                             value={product.id.toString()}
