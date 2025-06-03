@@ -27,7 +27,7 @@ export const columns: ColumnDef<ProductWithCategory>[] = [
     accessorKey: "category.name",
     cell: ({ row }) => {
       const product = row.original;
-      return product.category?.name || "No Category";
+      return <StatusBadge status={product.category.name ?? "No Category"} />;
     },
   },
   {

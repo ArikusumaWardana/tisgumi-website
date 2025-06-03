@@ -19,11 +19,11 @@ export async function postCustomer(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // Format phone number with +62 prefix
-  const formattedPhone = `+62${validate.data.phone}`;
+  const formattedPhone = `62${validate.data.phone}`;
 
   // Check if the customer already exists
   const existingCustomer = await prisma.customer.findFirst({
@@ -74,11 +74,11 @@ export async function updateCustomer(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // Format phone number with +62 prefix
-  const formattedPhone = `+62${validate.data.phone}`;
+  const formattedPhone = `62${validate.data.phone}`;
 
   // If the id is undefined, return an error message
   if (id === undefined) {
@@ -114,7 +114,7 @@ export async function updateCustomer(
 // Function to delete a customer
 export async function deleteCustomer(
   _: unknown,
-  formData: FormData,
+  _formData: FormData,
   id: number
 ): Promise<ActionResult> {
   // Try to delete the customer
