@@ -350,12 +350,12 @@ export default function FormCustomerPricing({
                     </SelectTrigger>
                     <SelectContent className="w-full">
                       {getAvailableProducts(index).map(
-                        (product, productIndex) => (
+                        (product) => (
                           <SelectItem
                             key={product.id}
                             value={product.id.toString()}
                           >
-                            {productIndex + 1}. {product.name} - Rp{" "}
+                            {product.name} - Rp{" "}
                             {product.default_price.toLocaleString("id-ID")}
                           </SelectItem>
                         )
