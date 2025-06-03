@@ -1,0 +1,147 @@
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function productSeeder() {
+     
+     await prisma.product.createMany({
+          data: [
+               {
+                    code: "PRO-001",
+                    name: "Nasi Goreng Spesial",
+                    default_price: 10000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-002",
+                    name: "Nasi Goreng Pedas",
+                    default_price: 15000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-003",
+                    name: "Nasi Goreng Pedas",
+                    default_price: 13000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-004",
+                    name: "Mie Ayam Bakso",
+                    default_price: 18000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-005",
+                    name: "Sate Madura",
+                    default_price: 12000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-006",
+                    name: "Soto Ayam Lamongan",
+                    default_price: 14000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-007",
+                    name: "Rawon Daging Sapi",
+                    default_price: 16000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-008",
+                    name: "Ikan Bakar Jimbaran",
+                    default_price: 24000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-009",
+                    name: "Sop Buntut",
+                    default_price: 8000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-010",
+                    name: "Sop Ikan",
+                    default_price: 10000,
+                    status: "active",
+                    category_id: 1,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-011",
+                    name: "Teh Tarik",
+                    default_price: 15000,
+                    status: "active",
+                    category_id: 2,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-012",
+                    name: "Kopi Tarik",
+                    default_price: 18000,
+                    status: "active",
+                    category_id: 2,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-013",
+                    name: "Jus Jeruk",
+                    default_price: 6000,
+                    status: "active",
+                    category_id: 2,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-014",
+                    name: "Jus Mangga",
+                    default_price: 10000,
+                    status: "active",
+                    category_id: 2,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               },
+               {
+                    code: "PRO-015",
+                    name: "Jus Alpukat",
+                    default_price: 12000,
+                    status: "active",
+                    category_id: 2,
+                    created_at: new Date(),
+                    updated_at: new Date(),
+               }
+          ]
+     })
+
+}
