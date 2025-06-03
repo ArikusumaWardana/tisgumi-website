@@ -13,6 +13,7 @@ import {
   updateCustomerPricing,
   getCustomers,
   getProducts,
+  getPricingCount,
 } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
@@ -24,6 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  formatToRupiah,
+  handlePriceInputChange,
+  getNumericValue,
+} from "@/utils/currency";
 
 // Initial state for the form
 const initialState: ActionResult = {
@@ -55,6 +61,7 @@ interface PricingItem {
   id?: number; // For existing records
   product_id: number;
   custom_price: number;
+  formattedPrice: string; // For display
 }
 
 interface FormCustomerPricingProps {
@@ -83,8 +90,27 @@ export default function FormCustomerPricing({
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [pricingCode, setPricingCode] = useState<string>("");
   const [pricingItems, setPricingItems] = useState<PricingItem[]>([
-    { product_id: 0, custom_price: 0 },
+    { product_id: 0, custom_price: 0, formattedPrice: "" },
   ]);
+
+  // Generate pricing code function
+  const generatePricingCode = async () => {
+    try {
+      // Fetch count from actions
+      const count = await getPricingCount();
+      const nextNumber = count + 1;
+      const formattedNumber = nextNumber.toString().padStart(3, "0");
+      const generatedCode = `PRC-${formattedNumber}`;
+      setPricingCode(generatedCode);
+    } catch (error) {
+      // Fallback jika terjadi error
+      const timestamp = Date.now();
+      const codeNumber = timestamp % 1000;
+      const formattedNumber = codeNumber.toString().padStart(3, "0");
+      const generatedCode = `PRC-${formattedNumber}`;
+      setPricingCode(generatedCode);
+    }
+  };
 
   // State and form action for customer pricing
   const [state, formAction] = useActionState(
@@ -102,6 +128,11 @@ export default function FormCustomerPricing({
       setCustomers(customersData);
       setProducts(productsData);
 
+      // Auto generate pricing code for create mode
+      if (type === "create" && !pricingCode) {
+        generatePricingCode();
+      }
+
       // Initialize form data for update mode after products are loaded
       if (type === "update" && customerData) {
         setSelectedCustomer(customerData.id.toString());
@@ -114,12 +145,13 @@ export default function FormCustomerPricing({
           id: pricing.id,
           product_id: pricing.product_id,
           custom_price: pricing.custom_price,
+          formattedPrice: formatToRupiah(pricing.custom_price.toString()),
         }));
 
         setPricingItems(
           existingItems.length > 0
             ? existingItems
-            : [{ product_id: 0, custom_price: 0 }]
+            : [{ product_id: 0, custom_price: 0, formattedPrice: "" }]
         );
       }
     };
@@ -128,7 +160,10 @@ export default function FormCustomerPricing({
 
   // Add new pricing item
   const addPricingItem = () => {
-    setPricingItems([...pricingItems, { product_id: 0, custom_price: 0 }]);
+    setPricingItems([
+      ...pricingItems,
+      { product_id: 0, custom_price: 0, formattedPrice: "" },
+    ]);
   };
 
   // Remove pricing item
@@ -138,18 +173,21 @@ export default function FormCustomerPricing({
     }
   };
 
-  // Update pricing item
-  const updatePricingItem = (
-    index: number,
-    field: keyof PricingItem,
-    value: number
-  ) => {
+  // Handle price input change with formatting
+  const handlePriceChange = (index: number, value: string) => {
+    const formatted = handlePriceInputChange(value);
+    const numericValue = getNumericValue(formatted);
+
     const updatedItems = [...pricingItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: value,
-    } as PricingItem;
-    setPricingItems(updatedItems);
+    const currentItem = updatedItems[index];
+    if (currentItem) {
+      updatedItems[index] = {
+        ...currentItem,
+        formattedPrice: formatted,
+        custom_price: numericValue,
+      };
+      setPricingItems(updatedItems);
+    }
   };
 
   // Set default price when product is selected
@@ -161,17 +199,33 @@ export default function FormCustomerPricing({
     const updatedItems = [...pricingItems];
     const currentItem = updatedItems[index];
     if (currentItem) {
+      const defaultPrice = selectedProduct?.default_price || 0;
+      const shouldUseDefaultPrice =
+        currentItem.custom_price === 0 && selectedProduct;
+
       updatedItems[index] = {
         ...currentItem,
         product_id: productIdNum,
-        // Only set default price if current custom_price is 0 or empty
-        custom_price:
-          currentItem.custom_price === 0 && selectedProduct
-            ? selectedProduct.default_price
-            : currentItem.custom_price,
+        custom_price: shouldUseDefaultPrice
+          ? defaultPrice
+          : currentItem.custom_price,
+        formattedPrice: shouldUseDefaultPrice
+          ? formatToRupiah(defaultPrice.toString())
+          : currentItem.formattedPrice,
       };
       setPricingItems(updatedItems);
     }
+  };
+
+  // Get available products for a specific index (excluding already selected products)
+  const getAvailableProducts = (currentIndex: number) => {
+    const selectedProductIds = pricingItems
+      .map((item, index) => (index !== currentIndex ? item.product_id : null))
+      .filter((id) => id !== null && id > 0);
+
+    return products.filter(
+      (product) => !selectedProductIds.includes(product.id)
+    );
   };
 
   return (
@@ -179,15 +233,9 @@ export default function FormCustomerPricing({
       {/* Hidden fields for form data */}
       <input type="hidden" name="customer_id" value={selectedCustomer} />
       <input type="hidden" name="form_type" value={type} />
+      <input type="hidden" name="code" value={pricingCode} />
       {type === "update" && customerData && (
-        <>
-          <input
-            type="hidden"
-            name="customer_data_id"
-            value={customerData.id}
-          />
-          <input type="hidden" name="pricing_code" value={pricingCode} />
-        </>
+        <input type="hidden" name="customer_data_id" value={customerData.id} />
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
@@ -202,37 +250,15 @@ export default function FormCustomerPricing({
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Pricing Code Field */}
-          <div className="space-y-2">
-            <Label htmlFor="code">
-              Pricing Code <span className="text-red-600">*</span>
-            </Label>
-            <Input
-              id="code"
-              name="code"
-              type="text"
-              placeholder="e.g., PRICING-001"
-              required
-              value={pricingCode}
-              onChange={(e) => setPricingCode(e.target.value)}
-              disabled={type === "update"}
-            />
-            <p className="text-xs text-gray-500">
-              {type === "update"
-                ? "Pricing code cannot be changed"
-                : "Unique identifier for the pricing configuration"}
-            </p>
-          </div>
-
-          {/* Customer Field */}
+        <div className="space-y-4">
+          {/* Customer Field - Full Width */}
           <div className="space-y-2">
             <Label htmlFor="customer_id">
               Customer <span className="text-red-600">*</span>
             </Label>
             {type === "update" ? (
-              <div className="flex items-center h-10 px-3 py-2 text-sm border rounded-md bg-gray-50 dark:bg-gray-700">
-                {customerData?.name} ({customerData?.code})
+              <div className="flex items-center h-10 px-3 py-2 text-sm border rounded-md bg-gray-50 dark:bg-gray-700 w-full">
+                {customerData?.name}
               </div>
             ) : (
               <Select
@@ -240,16 +266,16 @@ export default function FormCustomerPricing({
                 value={selectedCustomer}
                 onValueChange={setSelectedCustomer}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a customer" />
                 </SelectTrigger>
-                <SelectContent>
-                  {customers.map((customer) => (
+                <SelectContent className="w-full">
+                  {customers.map((customer, index) => (
                     <SelectItem
                       key={customer.id}
                       value={customer.id.toString()}
                     >
-                      {customer.name} ({customer.code})
+                      {index + 1}. {customer.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -305,8 +331,8 @@ export default function FormCustomerPricing({
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Product Selection */}
+              <div className="space-y-4">
+                {/* Product Selection - Full Width */}
                 <div className="space-y-2">
                   <Label htmlFor={`product-${index}`}>
                     Product <span className="text-red-600">*</span>
@@ -319,43 +345,52 @@ export default function FormCustomerPricing({
                     }
                     onValueChange={(value) => handleProductSelect(index, value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a product" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem
-                          key={product.id}
-                          value={product.id.toString()}
-                        >
-                          {product.name} ({product.code}) - Rp{" "}
-                          {product.default_price.toLocaleString()}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="w-full">
+                      {getAvailableProducts(index).map(
+                        (product, productIndex) => (
+                          <SelectItem
+                            key={product.id}
+                            value={product.id.toString()}
+                          >
+                            {productIndex + 1}. {product.name} - Rp{" "}
+                            {product.default_price.toLocaleString("id-ID")}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Custom Price */}
+                {/* Custom Price - Full Width with Currency Format */}
                 <div className="space-y-2">
                   <Label htmlFor={`price-${index}`}>
                     Custom Price <span className="text-red-600">*</span>
                   </Label>
-                  <Input
-                    id={`price-${index}`}
-                    name={`product_items[${index}].custom_price`}
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={item.custom_price || ""}
-                    onChange={(e) =>
-                      updatePricingItem(
-                        index,
-                        "custom_price",
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                      Rp
+                    </span>
+                    <Input
+                      id={`price-display-${index}`}
+                      type="text"
+                      placeholder="e.g., 100,000"
+                      value={item.formattedPrice}
+                      onChange={(e) => handlePriceChange(index, e.target.value)}
+                      className="pl-8 w-full"
+                    />
+                    {/* Hidden input untuk nilai numerik yang akan dikirim ke server */}
+                    <input
+                      type="hidden"
+                      name={`product_items[${index}].custom_price`}
+                      value={item.custom_price}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Price in Indonesian Rupiah (e.g., 100,000)
+                  </p>
                 </div>
               </div>
 

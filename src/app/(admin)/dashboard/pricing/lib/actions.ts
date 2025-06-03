@@ -8,13 +8,47 @@ import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 
-// Function to get all customers for select options
+// Function to get count of pricing codes for auto-generation
+export async function getPricingCount() {
+  try {
+    // Get count of distinct pricing codes (excluding deleted ones)
+    const count = await prisma.customProductPricing.groupBy({
+      by: ["code"],
+      where: {
+        deleted_at: null,
+      },
+    });
+
+    return count.length;
+  } catch (error) {
+    console.error("Error fetching pricing count:", error);
+    return 0;
+  }
+}
+
+// Function to get all customers for select options (excluding those with existing custom pricing)
 export async function getCustomers() {
   try {
+    // Get customer IDs that already have custom pricing
+    const existingCustomerIds = await prisma.customProductPricing.findMany({
+      where: {
+        deleted_at: null,
+      },
+      select: {
+        customer_id: true,
+      },
+      distinct: ["customer_id"],
+    });
+
+    const excludedIds = existingCustomerIds.map((item) => item.customer_id);
+
     const customers = await prisma.customer.findMany({
       where: {
         deleted_at: null,
         status: "active",
+        id: {
+          notIn: excludedIds,
+        },
       },
       select: {
         id: true,
@@ -22,7 +56,7 @@ export async function getCustomers() {
         name: true,
       },
       orderBy: {
-        name: "asc",
+        name: "asc", // Sort ascending A-Z
       },
     });
     return customers;
@@ -91,7 +125,9 @@ export async function postCustomProductPricing(
     });
 
     if (!validate.success) {
-      return { error: validate.error.errors[0]?.message ?? "Validation failed" };
+      return {
+        error: validate.error.errors[0]?.message ?? "Validation failed",
+      };
     }
 
     // Check if the code already exists
@@ -183,7 +219,7 @@ export async function updateCustomProductPricing(
 // Function to delete a custom product pricing
 export async function deleteCustomProductPricing(
   _: unknown,
-  formData: FormData,
+  _formData: FormData,
   id: number
 ): Promise<ActionResult> {
   // Try to delete the custom product pricing
