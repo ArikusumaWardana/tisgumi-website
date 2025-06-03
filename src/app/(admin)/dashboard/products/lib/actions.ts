@@ -20,7 +20,7 @@ export async function postProduct(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // Check if the product already exists
@@ -74,7 +74,7 @@ export async function updateProduct(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // If the id is undefined, return an error message
@@ -112,7 +112,7 @@ export async function updateProduct(
 // Function to delete a product
 export async function deleteProduct(
   _: unknown,
-  formData: FormData,
+  _formData: FormData,
   id: number
 ): Promise<ActionResult> {
   // Try to delete the product

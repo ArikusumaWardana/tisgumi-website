@@ -32,7 +32,7 @@ export async function postAdmin(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // Hash the password input
@@ -104,7 +104,7 @@ export async function updateAdmin(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // Hash the password input

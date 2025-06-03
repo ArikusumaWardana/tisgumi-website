@@ -21,7 +21,7 @@ export async function LoginAction(
 
   if (!validate.success) {
     return {
-      error: validate.error.errors[0].message,
+      error: validate.error.errors[0]?.message ?? "Validation failed",
     };
   }
 

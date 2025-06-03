@@ -1,7 +1,10 @@
 import React from "react";
-import { getCustomProductPricingById } from "../../lib/data";
+import {
+  getCustomProductPricingById,
+  getCustomerPricingDetails,
+} from "../../lib/data";
 import { redirect } from "next/navigation";
-import FormCustomProductPricing from "../../_components/form-pricing";
+import FormCustomerPricing from "../../_components/form-customer-pricing";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -21,9 +24,20 @@ export default async function EditCustomProductPricingPage({
 }: EditCustomProductPricingPageProps) {
   // Await params before using its properties
   const resolvedParams = await params;
-  const data = await getCustomProductPricingById(resolvedParams.id);
 
-  // If the custom product pricing is not found, redirect to the custom product pricings page
+  // First get the custom product pricing to get the customer ID
+  const pricingRecord = await getCustomProductPricingById(resolvedParams.id);
+
+  if (!pricingRecord) {
+    return redirect("/dashboard/pricing");
+  }
+
+  // Then get the full customer data with all pricing details
+  const data = await getCustomerPricingDetails(
+    pricingRecord.customer_id.toString()
+  );
+
+  // If the customer data is not found, redirect to the custom product pricings page
   if (!data) {
     return redirect("/dashboard/pricing");
   }
@@ -51,7 +65,7 @@ export default async function EditCustomProductPricingPage({
 
       {/* Form */}
       <div className="max-w-2xl">
-        <FormCustomProductPricing type="update" data={data} />
+        <FormCustomerPricing type="update" customerData={data} />
       </div>
     </div>
   );

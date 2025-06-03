@@ -32,7 +32,7 @@ export default function FormDelete({ id }: FormDeleteProps) {
        formData: FormData
      ) => deleteCustomer(_, formData, id);
 
-  const [state, formAction] = useActionState(deleteCustomerWithId, initialState);
+  const [_state, formAction] = useActionState(deleteCustomerWithId, initialState);
 
   return (
     <form action={formAction}>

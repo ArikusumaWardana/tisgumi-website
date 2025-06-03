@@ -17,7 +17,7 @@ export async function postCategory(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // Check if the category already exists
@@ -65,7 +65,7 @@ export async function updateCategory(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // If the id is undefined, return an error message

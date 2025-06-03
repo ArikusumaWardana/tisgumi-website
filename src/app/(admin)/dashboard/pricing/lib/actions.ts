@@ -91,7 +91,7 @@ export async function postCustomProductPricing(
     });
 
     if (!validate.success) {
-      return { error: validate.error.errors[0].message };
+      return { error: validate.error.errors[0]?.message ?? "Validation failed" };
     }
 
     // Check if the code already exists
@@ -146,7 +146,7 @@ export async function updateCustomProductPricing(
 
   // If the validation fails, return an error message
   if (!validate.success) {
-    return { error: validate.error.errors[0].message };
+    return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
   // If the id is undefined, return an error message
@@ -283,7 +283,7 @@ export async function updateCustomerPricing(
       .map((item) => {
         const parts = item.code.split("-");
         const lastPart = parts[parts.length - 1];
-        return parseInt(lastPart) || 0;
+        return parseInt(lastPart || "0");
       })
       .filter((num) => num > 0);
 

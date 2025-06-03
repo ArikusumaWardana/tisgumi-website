@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, Bell, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import FormLogout from "./form-logout";
 import { User } from "lucia";
 
