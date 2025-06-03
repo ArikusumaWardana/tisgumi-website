@@ -95,3 +95,12 @@ export const singleCustomProductPricingSchema = z.object({
     .number({ required_error: "Price is required" })
     .min(0, { message: "Price must be at least 0" }),
 });
+
+
+export const orderSchema = z.object({
+  code: z.string({ required_error: "Code is required" }).min(4, { message: "Code must be at least 4 characters long" }),
+  customer_id: z.number({ required_error: "Customer is required" }),
+  product_id: z.number({ required_error: "Product is required" }),
+  quantity: z.number({ required_error: "Quantity is required" }).min(1, { message: "Quantity must be at least 1" }),
+  payment_date: z.date({ required_error: "Payment date is required" }),
+});

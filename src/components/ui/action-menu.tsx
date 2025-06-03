@@ -1,3 +1,5 @@
+"use client";
+
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,7 +40,9 @@ export function ActionMenu({
         <DropdownMenuSeparator />
         {onContact && (
           <DropdownMenuItem asChild>
-            <Link target="_blank" href={onContact}>Contact</Link>
+            <Link target="_blank" href={onContact}>
+              Contact
+            </Link>
           </DropdownMenuItem>
         )}
         {onEdit && (
@@ -59,7 +63,7 @@ export function ActionMenu({
         {onDelete && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>{onDelete}</DropdownMenuItem>
+            <div className="p-1">{onDelete}</div>
           </>
         )}
       </DropdownMenuContent>
