@@ -145,7 +145,10 @@ export default function FormCustomerPricing({
     value: number
   ) => {
     const updatedItems = [...pricingItems];
-    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    updatedItems[index] = {
+      ...updatedItems[index],
+      [field]: value,
+    } as PricingItem;
     setPricingItems(updatedItems);
   };
 
@@ -156,16 +159,19 @@ export default function FormCustomerPricing({
 
     // Update the pricing item with new product_id
     const updatedItems = [...pricingItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      product_id: productIdNum,
-      // Only set default price if current custom_price is 0 or empty
-      custom_price:
-        updatedItems[index].custom_price === 0 && selectedProduct
-          ? selectedProduct.default_price
-          : updatedItems[index].custom_price,
-    };
-    setPricingItems(updatedItems);
+    const currentItem = updatedItems[index];
+    if (currentItem) {
+      updatedItems[index] = {
+        ...currentItem,
+        product_id: productIdNum,
+        // Only set default price if current custom_price is 0 or empty
+        custom_price:
+          currentItem.custom_price === 0 && selectedProduct
+            ? selectedProduct.default_price
+            : currentItem.custom_price,
+      };
+      setPricingItems(updatedItems);
+    }
   };
 
   return (
@@ -208,7 +214,7 @@ export default function FormCustomerPricing({
               type="text"
               placeholder="e.g., PRICING-001"
               required
-              value={pricingCode}   
+              value={pricingCode}
               onChange={(e) => setPricingCode(e.target.value)}
               disabled={type === "update"}
             />
