@@ -57,7 +57,6 @@ export const createCustomerColumns = (
         <ActionMenu
           onContact={`https://wa.me/${customer.phone}`}
           onEdit={`/dashboard/customers/edit/${customer.id}`}
-          onView={`/dashboard/customers/view/${customer.id}`}
           onDelete={<FormDelete id={customer.id} />}
           user={user}
           module="customers"
