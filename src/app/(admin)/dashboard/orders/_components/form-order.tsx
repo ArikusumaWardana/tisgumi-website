@@ -461,19 +461,6 @@ export default function FormOrder() {
           </Alert>
         )}
 
-        {!usingFallback && customers.length > 0 && products.length > 0 && (
-          <Alert
-            variant="default"
-            className="border-green-200 bg-green-50 text-green-800"
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Form data loaded successfully! Found {customers.length} customers
-              and {products.length} products.
-            </AlertDescription>
-          </Alert>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Order Code Field */}
           <div className="space-y-2">
