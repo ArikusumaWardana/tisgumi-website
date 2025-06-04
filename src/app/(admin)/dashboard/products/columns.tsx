@@ -6,6 +6,7 @@ import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatToRupiah } from "@/utils/currency";
+import { User } from "lucia";
 
 // Type for product with category based on our data structure
 type Product = {
@@ -28,7 +29,10 @@ type Product = {
   };
 };
 
-export const columns: ColumnDef<Product>[] = [
+// Function to create columns with user-aware ActionMenu
+export const createProductColumns = (
+  user: User | null
+): ColumnDef<Product>[] => [
   {
     header: "Code",
     accessorKey: "code",
@@ -75,8 +79,14 @@ export const columns: ColumnDef<Product>[] = [
         <ActionMenu
           onEdit={`/dashboard/products/edit/${product.id}`}
           onDelete={<FormDelete id={product.id} />}
+          user={user}
+          module="products"
+          requiresSuperadmin={true}
         />
       );
     },
   },
 ];
+
+// Export static columns for backward compatibility (without role restrictions)
+export const columns = createProductColumns(null);

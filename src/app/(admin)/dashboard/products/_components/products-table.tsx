@@ -1,32 +1,35 @@
-import { getProductsPaginated } from "../lib/data";
-import { ProductsTableClient } from "./products-table-client";
+"use client";
 
-interface ProductsTableProps {
-  page: number;
-  limit: number;
-  search: string;
+import { DataTable } from "@/components/ui/data-table";
+import { createProductColumns } from "../columns";
+import { User } from "lucia";
+
+interface Product {
+  id: number;
+  code: string;
+  name: string;
+  default_price: number;
+  status: string;
+  category_id: number;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+  category: {
+    id: number;
+    code: string;
+    name: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+  };
 }
 
-export async function ProductsTable(props: ProductsTableProps) {
-  const { page, limit, search } = props;
+interface ProductsTableProps {
+  data: Product[];
+  user: User | null;
+}
 
-  try {
-    const result = await getProductsPaginated({ page, limit, search });
-    const { data, pagination } = result;
-
-    return (
-      <ProductsTableClient
-        data={data}
-        pagination={pagination}
-        search={search}
-      />
-    );
-  } catch (error) {
-    console.error("Error in ProductsTable:", error);
-    return (
-      <div className="p-4 text-center text-red-500">
-        Error loading products. Please try again.
-      </div>
-    );
-  }
+export function ProductsTable({ data, user }: ProductsTableProps) {
+  const columns = createProductColumns(user);
+  return <DataTable columns={columns} data={data} />;
 }

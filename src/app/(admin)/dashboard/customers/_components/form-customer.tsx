@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Save, RotateCcw } from "lucide-react";
+import { AlertCircle, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFormLoading } from "@/hooks/use-form-loading";
+import FormLoading from "@/components/ui/form-loading";
+
 // Initial state for the form
 const initialState: ActionResult = {
   error: "",
@@ -57,30 +60,40 @@ export default function FormCustomer({
   const [codeValue, setCodeValue] = useState<string>(data?.code || "");
 
   // Generate customer code function
-  const generateCustomerCode = async () => {
+  const generateCustomerCode = async (): Promise<string> => {
     try {
       // Fetch count from actions
       const count = await getCustomersCount();
       const nextNumber = count + 1;
       const formattedNumber = nextNumber.toString().padStart(3, "0");
-      const generatedCode = `CUS-${formattedNumber}`;
-      setCodeValue(generatedCode);
+      return `CUS-${formattedNumber}`;
     } catch (error) {
       // Fallback jika terjadi error
       const timestamp = Date.now();
       const codeNumber = timestamp % 1000;
       const formattedNumber = codeNumber.toString().padStart(3, "0");
-      const generatedCode = `CUS-${formattedNumber}`;
-      setCodeValue(generatedCode);
+      return `CUS-${formattedNumber}`;
     }
   };
 
-  // Auto generate code saat component mount untuk mode create
+  // Use form loading hook
+  const {
+    isLoading,
+    loadingProgress,
+    error: loadingError,
+    generatedCode,
+  } = useFormLoading({
+    ...(type === "create" &&
+      !codeValue && { autoGenerateCode: generateCustomerCode }),
+    skipLoading: type === "update" || !!codeValue,
+  });
+
+  // Set generated code when available
   useEffect(() => {
-    if (type === "create" && !codeValue) {
-      generateCustomerCode();
+    if (generatedCode && type === "create" && !codeValue) {
+      setCodeValue(generatedCode);
     }
-  }, [type]);
+  }, [generatedCode, type, codeValue]);
 
   // Initialize phone values
   useEffect(() => {
@@ -126,6 +139,29 @@ export default function FormCustomer({
     type === "create" ? postCustomer : updateCustomerWithId,
     initialState
   );
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <FormLoading
+        loadingProgress={loadingProgress}
+        title="Preparing Customer Form"
+        description="Generating unique customer code..."
+      />
+    );
+  }
+
+  // Show loading error
+  if (loadingError) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{loadingError}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -217,17 +253,18 @@ export default function FormCustomer({
             </Label>
             <Select
               name="status"
-              required
               defaultValue={data?.status || "active"}
+              required
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a status" />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent className="w-full">
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">Customer account status</p>
           </div>
         </div>
       </div>

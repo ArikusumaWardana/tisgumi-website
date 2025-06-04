@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { User } from "lucia";
+import { canCreateOrEditClient } from "@/lib/client-auth";
 
 interface PageHeaderProps {
   title: string;
@@ -11,14 +13,32 @@ interface PageHeaderProps {
     onClick?: () => void;
     href?: string;
     icon?: React.ReactNode;
+    requiresSuperadmin?: boolean;
+    module?: "products" | "categories" | "customers";
   };
+  user?: User | null;
 }
 
 export function PageHeader({
   title,
   description,
   actionButton,
+  user,
 }: PageHeaderProps) {
+  const shouldShowActionButton = () => {
+    if (!actionButton) return false;
+
+    if (actionButton.requiresSuperadmin && actionButton.module && user) {
+      return canCreateOrEditClient(user.role);
+    }
+
+    if (!actionButton.requiresSuperadmin) {
+      return true;
+    }
+
+    return false;
+  };
+
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
@@ -30,18 +50,18 @@ export function PageHeader({
         </p>
       </div>
 
-      {actionButton &&
-        (actionButton.href ? (
-          <Link href={actionButton.href}>
+      {shouldShowActionButton() &&
+        (actionButton!.href ? (
+          <Link href={actionButton!.href}>
             <Button className="w-full md:w-auto">
-              {actionButton.icon}
-              {actionButton.label}
+              {actionButton!.icon}
+              {actionButton!.label}
             </Button>
           </Link>
         ) : (
-          <Button className="w-full md:w-auto" onClick={actionButton.onClick}>
-            {actionButton.icon}
-            {actionButton.label}
+          <Button className="w-full md:w-auto" onClick={actionButton!.onClick}>
+            {actionButton!.icon}
+            {actionButton!.label}
           </Button>
         ))}
     </div>

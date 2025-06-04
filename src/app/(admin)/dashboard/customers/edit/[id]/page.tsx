@@ -5,6 +5,7 @@ import FormCustomer from "../../_components/form-customer";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getUser } from "@/lib/auth";
 
 // Type for the params
 type Tparams = {
@@ -19,6 +20,14 @@ interface EditCustomerPageProps {
 export default async function EditCustomerPage({
   params,
 }: EditCustomerPageProps) {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to customers page
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard/customers");
+  }
+
   // Await params before using its properties
   const resolvedParams = await params;
   const data = await getCustomerById(resolvedParams.id);
@@ -36,7 +45,7 @@ export default async function EditCustomerPage({
         <Link href="/dashboard/customers">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Customers
           </Button>
         </Link>
         <div>
@@ -44,7 +53,7 @@ export default async function EditCustomerPage({
             Update Customer
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Update the customer to organize your menu items
+            Update customer information
           </p>
         </div>
       </div>

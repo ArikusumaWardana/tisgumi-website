@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getCategories } from "../../../categories/lib/data";
+import { getUser } from "@/lib/auth";
 
 // Type for the params
 type Tparams = {
@@ -21,6 +22,14 @@ type EditProductPageProps = {
 export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to products page
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard/products");
+  }
+
   // Await params before using its properties
   const resolvedParams = await params;
 
@@ -43,7 +52,7 @@ export default async function EditProductPage({
         <Link href="/dashboard/products">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Products
           </Button>
         </Link>
         <div>

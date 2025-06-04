@@ -2,31 +2,39 @@ import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { SearchForm } from "@/components/ui/search-form";
 import { columns } from "./columns";
 import { getOrdersPaginated } from "./lib/data";
 import Link from "next/link";
+import OrdersClientWrapper from "./_components/orders-client-wrapper";
 
 interface OrdersPageProps {
   searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
 }
 
 function PaginationNav({
   pagination,
   search,
+  startDate,
+  endDate,
 }: {
   pagination: { page: number; totalPages: number; total: number };
   search: string;
+  startDate?: string;
+  endDate?: string;
 }) {
   const { page, totalPages } = pagination;
 
   const createPageUrl = (pageNum: number) => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
     params.set("page", pageNum.toString());
     return `?${params.toString()}`;
   };
@@ -63,12 +71,16 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const page = Number(params.page) || 1;
   const limit = Number(params.limit) || 10;
   const search = params.search || "";
+  const startDate = params.startDate || "";
+  const endDate = params.endDate || "";
 
-  // Get paginated data
+  // Get paginated data with date filtering
   const { data, pagination } = await getOrdersPaginated({
     page,
     limit,
     search,
+    startDate,
+    endDate,
   });
 
   return (
@@ -84,15 +96,20 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       />
 
       <div className="space-y-4">
-        {/* Search bar with button and loading */}
-        <SearchForm placeholder="Search orders..." defaultValue={search} />
+        {/* Client components wrapper */}
+        <OrdersClientWrapper search={search} />
 
         {/* Data table */}
         <DataTable columns={columns} data={data} />
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <PaginationNav pagination={pagination} search={search} />
+          <PaginationNav
+            pagination={pagination}
+            search={search}
+            startDate={startDate}
+            endDate={endDate}
+          />
         )}
       </div>
     </div>

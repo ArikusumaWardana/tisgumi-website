@@ -8,10 +8,12 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
-import { postAdmin, updateAdmin } from "../lib/actions";
+import { postAdmin, updateAdmin, getAdminsCount } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
 import { User } from "@prisma/client";
+import { useFormLoading } from "@/hooks/use-form-loading";
+import FormLoading from "@/components/ui/form-loading";
 
 // Initial state for the form
 const initialState: ActionResult = {
@@ -42,6 +44,45 @@ export default function FormAdmin({
   // Phone number state and formatting
   const [phoneDisplay, setPhoneDisplay] = useState<string>("");
   const [phoneValue, setPhoneValue] = useState<string>("");
+
+  // State for code input
+  const [codeValue, setCodeValue] = useState<string>(data?.code || "");
+
+  // Generate admin code function
+  const generateAdminCode = async (): Promise<string> => {
+    try {
+      // Fetch count from actions
+      const count = await getAdminsCount();
+      const nextNumber = count + 1;
+      const formattedNumber = nextNumber.toString().padStart(3, "0");
+      return `ADM-${formattedNumber}`;
+    } catch (error) {
+      // Fallback jika terjadi error
+      const timestamp = Date.now();
+      const codeNumber = timestamp % 1000;
+      const formattedNumber = codeNumber.toString().padStart(3, "0");
+      return `ADM-${formattedNumber}`;
+    }
+  };
+
+  // Use form loading hook
+  const {
+    isLoading,
+    loadingProgress,
+    error: loadingError,
+    generatedCode,
+  } = useFormLoading({
+    ...(type === "create" &&
+      !codeValue && { autoGenerateCode: generateAdminCode }),
+    skipLoading: type === "update" || !!codeValue,
+  });
+
+  // Set generated code when available
+  useEffect(() => {
+    if (generatedCode && type === "create" && !codeValue) {
+      setCodeValue(generatedCode);
+    }
+  }, [generatedCode, type, codeValue]);
 
   // Initialize phone values
   useEffect(() => {
@@ -88,6 +129,29 @@ export default function FormAdmin({
     initialState
   );
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <FormLoading
+        loadingProgress={loadingProgress}
+        title="Preparing Admin Form"
+        description="Generating unique admin code..."
+      />
+    );
+  }
+
+  // Show loading error
+  if (loadingError) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{loadingError}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
@@ -103,7 +167,6 @@ export default function FormAdmin({
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Code Field */}
-
           <div className="space-y-2">
             <Label htmlFor="code">
               Admin Code <span className="text-red-600">*</span>
@@ -114,7 +177,8 @@ export default function FormAdmin({
               type="text"
               placeholder="e.g., ADM-001"
               required
-              defaultValue={data?.code}
+              value={codeValue}
+              onChange={(e) => setCodeValue(e.target.value)}
             />
             <p className="text-xs text-gray-500">
               {`Unique identifier for the admin`}
@@ -197,9 +261,32 @@ export default function FormAdmin({
               name="password"
               type="password"
               placeholder="e.g., **********"
-              required
+              required={type === "create"}
             />
-            <p className="text-xs text-gray-500">{`Password for the admin`}</p>
+            <p className="text-xs text-gray-500">
+              {type === "create"
+                ? "Password for the admin account"
+                : "Leave empty to keep current password"}
+            </p>
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className="space-y-2">
+            <Label htmlFor="confirm_password">
+              Confirm Password <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              id="confirm_password"
+              name="confirm_password"
+              type="password"
+              placeholder="e.g., **********"
+              required={type === "create"}
+            />
+            <p className="text-xs text-gray-500">
+              {type === "create"
+                ? "Re-enter the password"
+                : "Leave empty to keep current password"}
+            </p>
           </div>
         </div>
       </div>

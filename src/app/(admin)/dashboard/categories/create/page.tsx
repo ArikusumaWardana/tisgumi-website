@@ -2,8 +2,18 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import FormCategory from "@/app/(admin)/dashboard/categories/_components/form-category";
+import { getUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function CreateCategoryPage() {
+export default async function CreateCategoryPage() {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to categories page
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard/categories");
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -11,7 +21,7 @@ export default function CreateCategoryPage() {
         <Link href="/dashboard/categories">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Categories
           </Button>
         </Link>
         <div>

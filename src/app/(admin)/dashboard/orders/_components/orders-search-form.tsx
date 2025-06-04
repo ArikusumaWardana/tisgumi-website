@@ -1,18 +1,23 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
-interface SearchFormProps {
+interface OrdersSearchFormProps {
   placeholder?: string;
   defaultValue?: string;
   className?: string;
 }
 
-export function SearchForm({
+export function OrdersSearchForm({
   placeholder = "Search...",
   defaultValue = "",
   className = "",
-}: SearchFormProps) {
+}: OrdersSearchFormProps) {
+  const searchParams = useSearchParams();
+
   return (
     <form method="get" className={`flex gap-2 max-w-md ${className}`}>
       <div className="relative flex-1">
@@ -30,8 +35,22 @@ export function SearchForm({
         Search
       </Button>
 
+      {/* Hidden inputs to preserve date filters */}
       <input type="hidden" name="page" value="1" />
+      {searchParams.get("startDate") && (
+        <input
+          type="hidden"
+          name="startDate"
+          value={searchParams.get("startDate")!}
+        />
+      )}
+      {searchParams.get("endDate") && (
+        <input
+          type="hidden"
+          name="endDate"
+          value={searchParams.get("endDate")!}
+        />
+      )}
     </form>
   );
 }
- 

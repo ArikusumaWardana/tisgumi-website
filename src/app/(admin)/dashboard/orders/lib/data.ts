@@ -5,6 +5,8 @@ interface GetOrdersParams {
   page?: number;
   limit?: number;
   search?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 interface OrderWithTotals {
@@ -134,12 +136,14 @@ export async function getOrdersPaginated({
   page = 1,
   limit = 10,
   search,
+  startDate,
+  endDate,
 }: GetOrdersParams = {}): Promise<GetOrdersResult> {
   try {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where = {
+    const where: any = {
       deleted_at: null,
       ...(search && {
         OR: [
@@ -157,6 +161,20 @@ export async function getOrdersPaginated({
         ],
       }),
     };
+
+    // Add date filtering
+    if (startDate || endDate) {
+      where.created_at = {};
+      if (startDate) {
+        where.created_at.gte = new Date(startDate);
+      }
+      if (endDate) {
+        // Add time to end of day for endDate
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.created_at.lte = endOfDay;
+      }
+    }
 
     // Get orders and total count in parallel
     const [orders, total] = await Promise.all([

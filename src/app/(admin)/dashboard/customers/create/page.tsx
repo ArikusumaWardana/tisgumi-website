@@ -2,8 +2,18 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import FormCustomer from "../_components/form-customer";
+import { getUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function CreateCategoryPage() {
+export default async function CreateCustomerPage() {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to customers page
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard/customers");
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -11,7 +21,7 @@ export default function CreateCategoryPage() {
         <Link href="/dashboard/customers">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Customers
           </Button>
         </Link>
         <div>
@@ -19,7 +29,7 @@ export default function CreateCategoryPage() {
             Create New Customer
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Add a new customer to organize your menu items
+            Add a new customer to your system
           </p>
         </div>
       </div>

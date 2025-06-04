@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/ui/search-form";
-import { columns } from "./columns";
 import { getCategoriesPaginated } from "./lib/data";
+import { getUser } from "@/lib/auth";
+import { CategoriesTable } from "./_components/categories-table";
 import Link from "next/link";
 
 interface CategoriesPageProps {
@@ -59,6 +59,9 @@ function PaginationNav({
 export default async function CategoriesPage({
   searchParams,
 }: CategoriesPageProps) {
+  // Get current user for role checking
+  const { user } = await getUser();
+
   // Await searchParams before accessing properties (Next.js 15 requirement)
   const params = await searchParams;
 
@@ -78,10 +81,13 @@ export default async function CategoriesPage({
       <PageHeader
         title="Category Management"
         description="Manage your menu categories and items"
+        user={user}
         actionButton={{
           label: "Add New Category",
           icon: <Plus className="w-4 h-4 mr-2" />,
           href: "/dashboard/categories/create",
+          requiresSuperadmin: true,
+          module: "categories",
         }}
       />
 
@@ -90,7 +96,7 @@ export default async function CategoriesPage({
         <SearchForm placeholder="Search categories..." defaultValue={search} />
 
         {/* Data table */}
-        <DataTable columns={columns} data={data} />
+        <CategoriesTable data={data} user={user} />
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

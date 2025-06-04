@@ -24,6 +24,8 @@ import {
   handlePriceInputChange,
   getNumericValue,
 } from "@/utils/currency";
+import { useFormLoading } from "@/hooks/use-form-loading";
+import FormLoading from "@/components/ui/form-loading";
 
 // Initial state for the form
 const initialState: ActionResult = {
@@ -42,7 +44,7 @@ interface Category {
 interface FormProductProps {
   type?: "create" | "update";
   data?: Product | null;
-  categories: Category[];
+  categories?: Category[];
 }
 
 // Submit button for the form
@@ -60,7 +62,7 @@ function SubmitButton() {
 export default function FormProduct({
   type = "create",
   data = null,
-  categories = [],
+  categories: propCategories = [],
 }: FormProductProps) {
   // State for formatted price display
   const [formattedPrice, setFormattedPrice] = useState<string>(
@@ -71,30 +73,46 @@ export default function FormProduct({
   const [codeValue, setCodeValue] = useState<string>(data?.code || "");
 
   // Generate product code function
-  const generateProductCode = async () => {
+  const generateProductCode = async (): Promise<string> => {
     try {
       // Fetch count from actions
       const count = await getProductsCount();
       const nextNumber = count + 1;
       const formattedNumber = nextNumber.toString().padStart(3, "0");
-      const generatedCode = `PRD-${formattedNumber}`;
-      setCodeValue(generatedCode);
+      return `PRD-${formattedNumber}`;
     } catch (error) {
       // Fallback jika terjadi error
       const timestamp = Date.now();
       const codeNumber = timestamp % 1000;
       const formattedNumber = codeNumber.toString().padStart(3, "0");
-      const generatedCode = `PRD-${formattedNumber}`;
-      setCodeValue(generatedCode);
+      return `PRD-${formattedNumber}`;
     }
   };
 
-  // Auto generate code saat component mount untuk mode create
+  // Use form loading hook - skip loading if categories are provided via props
+  const {
+    isLoading,
+    loadingProgress,
+    error: loadingError,
+    data: loadedData,
+    generatedCode,
+  } = useFormLoading({
+    dependencies: propCategories.length === 0 ? [] : [], // Categories loaded from parent
+    ...(type === "create" &&
+      !codeValue && { autoGenerateCode: generateProductCode }),
+    skipLoading: type === "update" || !!codeValue,
+  });
+
+  // Determine which categories to use
+  const categories =
+    propCategories.length > 0 ? propCategories : loadedData[0] || [];
+
+  // Set generated code when available
   useEffect(() => {
-    if (type === "create" && !codeValue) {
-      generateProductCode();
+    if (generatedCode && type === "create" && !codeValue) {
+      setCodeValue(generatedCode);
     }
-  }, [type]);
+  }, [generatedCode, type, codeValue]);
 
   // Update the product with the id
   const updateProductWithId = (_: unknown, formData: FormData) =>
@@ -111,6 +129,29 @@ export default function FormProduct({
     const formatted = handlePriceInputChange(e.target.value);
     setFormattedPrice(formatted);
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <FormLoading
+        loadingProgress={loadingProgress}
+        title="Preparing Product Form"
+        description="Loading categories and generating product code..."
+      />
+    );
+  }
+
+  // Show loading error
+  if (loadingError) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{loadingError}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -165,7 +206,7 @@ export default function FormProduct({
                 />
               </SelectTrigger>
               <SelectContent className="w-full">
-                {categories.map((category) => (
+                {categories.map((category: Category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name} ({category.code})
                   </SelectItem>
@@ -199,43 +240,45 @@ export default function FormProduct({
         {/* Price Field */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="default_price">Default Price</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                Rp
-              </span>
-              <Input
-                id="default_price_display"
-                type="text"
-                placeholder="e.g., 100,000"
-                value={formattedPrice}
-                onChange={handlePriceChange}
-                className="pl-8"
-              />
-              {/* Hidden input untuk nilai numerik yang akan dikirim ke server */}
-              <input
-                type="hidden"
-                name="default_price"
-                value={getNumericValue(formattedPrice)}
-              />
-            </div>
-            <p className="text-xs text-gray-500">
-              {`Price in Indonesian Rupiah (e.g., 100,000)`}
-            </p>
+            <Label htmlFor="default_price">
+              Default Price <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              id="default_price"
+              name="default_price"
+              type="text"
+              placeholder="e.g., Rp 50,000"
+              required
+              value={formattedPrice}
+              onChange={handlePriceChange}
+            />
+            <input
+              type="hidden"
+              name="default_price_numeric"
+              value={getNumericValue(formattedPrice)}
+            />
+            <p className="text-xs text-gray-500">Base price for this product</p>
           </div>
 
           {/* Status Field */}
           <div className="space-y-2 w-full">
-            <Label htmlFor="status">Status</Label>
-            <Select name="status" defaultValue={data?.status || "active"}>
+            <Label htmlFor="status">
+              Status <span className="text-red-600">*</span>
+            </Label>
+            <Select
+              name="status"
+              defaultValue={data?.status || "active"}
+              required
+            >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a status" />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent className="w-full">
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">Product availability status</p>
           </div>
         </div>
       </div>

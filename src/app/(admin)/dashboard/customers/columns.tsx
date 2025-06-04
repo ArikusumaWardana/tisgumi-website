@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { User } from "lucia";
 
 // Type that matches the actual data structure from getCustomersPaginated
 type CustomerData = {
@@ -18,7 +19,10 @@ type CustomerData = {
   deleted_at: Date | null;
 };
 
-export const columns: ColumnDef<CustomerData>[] = [
+// Function to create columns with user-aware ActionMenu
+export const createCustomerColumns = (
+  user: User | null
+): ColumnDef<CustomerData>[] => [
   {
     header: "Code",
     accessorKey: "code",
@@ -55,8 +59,14 @@ export const columns: ColumnDef<CustomerData>[] = [
           onEdit={`/dashboard/customers/edit/${customer.id}`}
           onView={`/dashboard/customers/view/${customer.id}`}
           onDelete={<FormDelete id={customer.id} />}
+          user={user}
+          module="customers"
+          requiresSuperadmin={true}
         />
       );
     },
   },
 ];
+
+// Export static columns for backward compatibility (without role restrictions)
+export const columns = createCustomerColumns(null);

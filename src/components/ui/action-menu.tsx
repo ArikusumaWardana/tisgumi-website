@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { User } from "lucia";
+import { canCreateOrEditClient, canDeleteClient } from "@/lib/client-auth";
 
 interface ActionMenuProps {
   onEdit?: string;
@@ -18,6 +20,9 @@ interface ActionMenuProps {
   onContact?: string;
   onDelete?: React.ReactNode;
   customActions?: { label: string; onClick: () => void }[];
+  user?: User | null;
+  module?: "products" | "categories" | "customers";
+  requiresSuperadmin?: boolean;
 }
 
 export function ActionMenu({
@@ -26,7 +31,42 @@ export function ActionMenu({
   onDelete,
   onContact,
   customActions,
+  user,
+  module,
+  requiresSuperadmin = false,
 }: ActionMenuProps) {
+  const canEdit = () => {
+    if (!requiresSuperadmin || !module || !user) return true;
+    return canCreateOrEditClient(user.role);
+  };
+
+  const canDeleteAction = () => {
+    if (!requiresSuperadmin || !module || !user) return true;
+    return canDeleteClient(user.role);
+  };
+
+  const shouldShowMenu = () => {
+    if (!requiresSuperadmin) return true;
+
+    const hasEditPermission = onEdit && canEdit();
+    const hasDeletePermission = onDelete && canDeleteAction();
+    const hasViewPermission = onView;
+    const hasContactPermission = onContact;
+    const hasCustomActions = customActions && customActions.length > 0;
+
+    return (
+      hasEditPermission ||
+      hasDeletePermission ||
+      hasViewPermission ||
+      hasContactPermission ||
+      hasCustomActions
+    );
+  };
+
+  if (!shouldShowMenu()) {
+    return null;
+  }
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -45,7 +85,7 @@ export function ActionMenu({
             </Link>
           </DropdownMenuItem>
         )}
-        {onEdit && (
+        {onEdit && canEdit() && (
           <DropdownMenuItem asChild>
             <Link href={onEdit}>Edit</Link>
           </DropdownMenuItem>
@@ -60,7 +100,7 @@ export function ActionMenu({
             {action.label}
           </DropdownMenuItem>
         ))}
-        {onDelete && (
+        {onDelete && canDeleteAction() && (
           <>
             <DropdownMenuSeparator />
             <div className="p-1">{onDelete}</div>

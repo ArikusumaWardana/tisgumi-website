@@ -16,6 +16,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
 import { Categories } from "@prisma/client";
+import { useFormLoading } from "@/hooks/use-form-loading";
+import FormLoading from "@/components/ui/form-loading";
 
 // Initial state for the form
 const initialState: ActionResult = {
@@ -47,30 +49,40 @@ export default function FormCategory({
   const [codeValue, setCodeValue] = useState<string>(data?.code || "");
 
   // Generate category code function
-  const generateCategoryCode = async () => {
+  const generateCategoryCode = async (): Promise<string> => {
     try {
       // Fetch count from actions
       const count = await getCategoriesCount();
       const nextNumber = count + 1;
       const formattedNumber = nextNumber.toString().padStart(3, "0");
-      const generatedCode = `CAT-${formattedNumber}`;
-      setCodeValue(generatedCode);
+      return `CAT-${formattedNumber}`;
     } catch (error) {
       // Fallback jika terjadi error
       const timestamp = Date.now();
       const codeNumber = timestamp % 1000;
       const formattedNumber = codeNumber.toString().padStart(3, "0");
-      const generatedCode = `CAT-${formattedNumber}`;
-      setCodeValue(generatedCode);
+      return `CAT-${formattedNumber}`;
     }
   };
 
-  // Auto generate code saat component mount untuk mode create
+  // Use form loading hook
+  const {
+    isLoading,
+    loadingProgress,
+    error: loadingError,
+    generatedCode,
+  } = useFormLoading({
+    ...(type === "create" &&
+      !codeValue && { autoGenerateCode: generateCategoryCode }),
+    skipLoading: type === "update" || !!codeValue,
+  });
+
+  // Set generated code when available
   useEffect(() => {
-    if (type === "create" && !codeValue) {
-      generateCategoryCode();
+    if (generatedCode && type === "create" && !codeValue) {
+      setCodeValue(generatedCode);
     }
-  }, [type]);
+  }, [generatedCode, type, codeValue]);
 
   // Update the category with the id
   const updateCategoryWithId = (_: unknown, formData: FormData) =>
@@ -81,6 +93,29 @@ export default function FormCategory({
     type === "create" ? postCategory : updateCategoryWithId,
     initialState
   );
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <FormLoading
+        loadingProgress={loadingProgress}
+        title="Preparing Category Form"
+        description="Generating unique category code..."
+      />
+    );
+  }
+
+  // Show loading error
+  if (loadingError) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{loadingError}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-6">

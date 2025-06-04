@@ -67,10 +67,8 @@ export default function FormOrder() {
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [orderCode, setOrderCode] = useState<string>("");
   const [paymentStatus, setPaymentStatus] = useState<string>("belum_lunas");
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([
-    { product_id: 0, quantity: 1, price: 0 },
-  ]);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([""]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usingFallback, setUsingFallback] = useState<boolean>(false);
   const [loadingProgress, setLoadingProgress] =
@@ -300,10 +298,8 @@ export default function FormOrder() {
 
   // Remove order item
   const removeOrderItem = (index: number) => {
-    if (orderItems.length > 1) {
-      setOrderItems(orderItems.filter((_, i) => i !== index));
-      setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
-    }
+    setOrderItems(orderItems.filter((_, i) => i !== index));
+    setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
   };
 
   // Update order item
@@ -553,16 +549,16 @@ export default function FormOrder() {
           </div>
 
           <div className="space-y-3">
-            {(orderItems || []).map((item, index) => (
-              <div
-                key={index}
-                className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Item #{index + 1}
-                  </span>
-                  {orderItems && orderItems.length > 1 && (
+            {orderItems && orderItems.length > 0 ? (
+              orderItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Item #{index + 1}
+                    </span>
                     <Button
                       type="button"
                       variant="outline"
@@ -571,88 +567,101 @@ export default function FormOrder() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Product Selection */}
-                  <div className="space-y-2 w-full">
-                    <Label htmlFor={`product-${index}`}>
-                      Product <span className="text-red-600">*</span>
-                    </Label>
-                    <Select
-                      key={`product-select-${index}-${item.product_id}`}
-                      name={`order_items[${index}].product_id`}
-                      value={selectedProducts[index] || ""}
-                      onValueChange={(value) =>
-                        handleProductSelect(index, value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select product..." />
-                      </SelectTrigger>
-                      <SelectContent className="w-full">
-                        {(() => {
-                          const availableProducts = getAvailableProducts(index);
-                          if (
-                            !availableProducts ||
-                            !Array.isArray(availableProducts)
-                          ) {
-                            return null;
-                          }
-                          return availableProducts.map((product) => (
-                            <SelectItem
-                              key={product.id}
-                              value={product.id.toString()}
-                            >
-                              {product.name}
-                            </SelectItem>
-                          ));
-                        })()}
-                      </SelectContent>
-                    </Select>
                   </div>
 
-                  {/* Quantity */}
-                  <div className="space-y-2">
-                    <Label htmlFor={`quantity-${index}`}>
-                      Quantity <span className="text-red-600">*</span>
-                    </Label>
-                    <Input
-                      id={`quantity-${index}`}
-                      name={`order_items[${index}].quantity`}
-                      type="number"
-                      min="1"
-                      placeholder="1"
-                      value={item.quantity || ""}
-                      onChange={(e) =>
-                        updateOrderItem(
-                          index,
-                          "quantity",
-                          parseInt(e.target.value) || 1
-                        )
-                      }
-                    />
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Product Selection */}
+                    <div className="space-y-2 w-full">
+                      <Label htmlFor={`product-${index}`}>
+                        Product <span className="text-red-600">*</span>
+                      </Label>
+                      <Select
+                        key={`product-select-${index}-${item.product_id}`}
+                        name={`order_items[${index}].product_id`}
+                        value={selectedProducts[index] || ""}
+                        onValueChange={(value) =>
+                          handleProductSelect(index, value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select product..." />
+                        </SelectTrigger>
+                        <SelectContent className="w-full">
+                          {(() => {
+                            const availableProducts =
+                              getAvailableProducts(index);
+                            if (
+                              !availableProducts ||
+                              !Array.isArray(availableProducts)
+                            ) {
+                              return null;
+                            }
+                            return availableProducts.map((product) => (
+                              <SelectItem
+                                key={product.id}
+                                value={product.id.toString()}
+                              >
+                                {product.name}
+                              </SelectItem>
+                            ));
+                          })()}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  {/* Price Display */}
-                  <div className="space-y-2">
-                    <Label>Price per Item</Label>
-                    <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded border">
-                      <span className="text-sm font-medium">
-                        Rp {item.price.toLocaleString()}
-                      </span>
-                      {item.product_id > 0 && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Subtotal: Rp{" "}
-                          {(item.price * item.quantity).toLocaleString()}
-                        </p>
-                      )}
+                    {/* Quantity */}
+                    <div className="space-y-2">
+                      <Label htmlFor={`quantity-${index}`}>
+                        Quantity <span className="text-red-600">*</span>
+                      </Label>
+                      <Input
+                        id={`quantity-${index}`}
+                        name={`order_items[${index}].quantity`}
+                        type="number"
+                        min="1"
+                        placeholder="1"
+                        value={item.quantity || ""}
+                        onChange={(e) =>
+                          updateOrderItem(
+                            index,
+                            "quantity",
+                            parseInt(e.target.value) || 1
+                          )
+                        }
+                      />
+                    </div>
+
+                    {/* Price Display */}
+                    <div className="space-y-2">
+                      <Label>Price per Item</Label>
+                      <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded border">
+                        <span className="text-sm font-medium">
+                          Rp {item.price.toLocaleString()}
+                        </span>
+                        {item.product_id > 0 && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Subtotal: Rp{" "}
+                            {(item.price * item.quantity).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                <div className="flex flex-col items-center">
+                  <Plus className="w-12 h-12 text-gray-400 mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400 mb-2">
+                    No items added yet
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                    Click "Add Item" to start adding products to this order
+                  </p>
+                </div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Total Amount */}

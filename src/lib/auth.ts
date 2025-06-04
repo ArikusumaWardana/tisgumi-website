@@ -86,6 +86,31 @@ export async function ensureRole(requiredRole: Role): Promise<User> {
   return user;
 }
 
+// Utility functions for role-based access control (server-side)
+export async function canCreateOrEdit(): Promise<boolean> {
+  const { user } = await getUser();
+  if (!user) return false;
+
+  // Only superadmin can create/edit products, categories, and customers
+  return user.role === "superadmin";
+}
+
+export async function canDelete(): Promise<boolean> {
+  const { user } = await getUser();
+  if (!user) return false;
+
+  // Only superadmin can delete products, categories, and customers
+  return user.role === "superadmin";
+}
+
+export async function canViewActions(): Promise<boolean> {
+  const { user } = await getUser();
+  if (!user) return false;
+
+  // Only superadmin can see action buttons for products, categories, and customers
+  return user.role === "superadmin";
+}
+
 // Lucia types
 declare module "lucia" {
   interface Register {

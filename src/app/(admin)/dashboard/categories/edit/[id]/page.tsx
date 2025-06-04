@@ -5,6 +5,7 @@ import FormCategory from "../../_components/form-category";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getUser } from "@/lib/auth";
 
 // Type for the params
 type Tparams = {
@@ -19,6 +20,14 @@ interface EditCategoryPageProps {
 export default async function EditCategoryPage({
   params,
 }: EditCategoryPageProps) {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to categories page
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard/categories");
+  }
+
   // Await params before using its properties
   const resolvedParams = await params;
   const data = await getCategoryById(resolvedParams.id);
@@ -36,7 +45,7 @@ export default async function EditCategoryPage({
         <Link href="/dashboard/categories">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Categories
           </Button>
         </Link>
         <div>

@@ -7,6 +7,22 @@ import prisma from "../../../../../../lib/prisma";
 import bcrypt from "bcrypt";
 import { getUser } from "@/lib/auth";
 
+// Function to get total admin count for code generation
+export async function getAdminsCount(): Promise<number> {
+  try {
+    const count = await prisma.user.count({
+      where: {
+        deleted_at: null,
+        role: "admin", // Only count admins, not superadmin
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error("Error fetching admins count:", error);
+    return 0;
+  }
+}
+
 // Function to create a new admin
 export async function postAdmin(
   _: unknown,
@@ -148,7 +164,7 @@ export async function updateAdmin(
 // Function to delete a admin
 export async function deleteAdmin(
   _: unknown,
-  formData: FormData,
+  _formData: FormData,
   id: number
 ): Promise<ActionResult> {
   // Check user role for access control

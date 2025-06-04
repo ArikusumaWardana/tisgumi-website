@@ -5,8 +5,12 @@ import { Categories } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
+import { User } from "lucia";
 
-export const columns: ColumnDef<Categories>[] = [
+// Function to create columns with user-aware ActionMenu
+export const createCategoryColumns = (
+  user: User | null
+): ColumnDef<Categories>[] => [
   {
     header: "Code",
     accessorKey: "code",
@@ -29,8 +33,14 @@ export const columns: ColumnDef<Categories>[] = [
         <ActionMenu
           onEdit={`/dashboard/categories/edit/${category.id}`}
           onDelete={<FormDelete id={category.id} />}
+          user={user}
+          module="categories"
+          requiresSuperadmin={true}
         />
       );
     },
   },
 ];
+
+// Export static columns for backward compatibility (without role restrictions)
+export const columns = createCategoryColumns(null);

@@ -3,8 +3,18 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import FormProduct from "@/app/(admin)/dashboard/products/_components/form-product";
 import { getCategories } from "../../categories/lib/data";
+import { getUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function CreateProductPage() {
+  // Check user role for access control
+  const { user } = await getUser();
+
+  // If user is not superadmin, redirect to products page
+  if (!user || user.role !== "superadmin") {
+    return redirect("/dashboard/products");
+  }
+
   // Fetch categories server-side
   const categories = await getCategories();
 
@@ -15,7 +25,7 @@ export default async function CreateProductPage() {
         <Link href="/dashboard/products">
           <Button variant="outline" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            Back to Products
           </Button>
         </Link>
         <div>

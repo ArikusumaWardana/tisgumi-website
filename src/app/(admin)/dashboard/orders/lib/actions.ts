@@ -147,7 +147,7 @@ export async function createOrder(
       );
       const quantity = Number(formData.get(`order_items[${index}].quantity`));
 
-      if (productId && quantity > 0) {
+      if (productId > 0 && quantity > 0) {
         orderItems.push({
           product_id: productId,
           quantity: quantity,

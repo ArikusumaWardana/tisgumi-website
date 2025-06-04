@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/ui/search-form";
-import { columns } from "./columns";
 import { getCustomersPaginated } from "./lib/data";
+import { getUser } from "@/lib/auth";
+import { CustomersTable } from "./_components/customers-table";
 import Link from "next/link";
 
 interface CustomersPageProps {
@@ -59,6 +59,9 @@ function PaginationNav({
 export default async function CustomersPage({
   searchParams,
 }: CustomersPageProps) {
+  // Get current user for role checking
+  const { user } = await getUser();
+
   // Await searchParams before accessing properties (Next.js 15 requirement)
   const params = await searchParams;
 
@@ -78,10 +81,13 @@ export default async function CustomersPage({
       <PageHeader
         title="Customer Management"
         description="Manage your customers"
+        user={user}
         actionButton={{
           label: "Add New Customer",
           icon: <Plus className="w-4 h-4 mr-2" />,
           href: "/dashboard/customers/create",
+          requiresSuperadmin: true,
+          module: "customers",
         }}
       />
 
@@ -90,7 +96,7 @@ export default async function CustomersPage({
         <SearchForm placeholder="Search customers..." defaultValue={search} />
 
         {/* Data table */}
-        <DataTable columns={columns} data={data} />
+        <CustomersTable data={data} user={user} />
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

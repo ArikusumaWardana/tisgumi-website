@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/ui/search-form";
-import { columns } from "./columns";
 import { getProductsPaginated } from "./lib/data";
+import { getUser } from "@/lib/auth";
+import { ProductsTable } from "./_components/products-table";
 import Link from "next/link";
 
 interface ProductsPageProps {
@@ -59,6 +59,9 @@ function PaginationNav({
 export default async function ProductsPage({
   searchParams,
 }: ProductsPageProps) {
+  // Get current user for role checking
+  const { user } = await getUser();
+
   // Await searchParams before accessing properties (Next.js 15 requirement)
   const params = await searchParams;
 
@@ -78,10 +81,13 @@ export default async function ProductsPage({
       <PageHeader
         title="Product Management"
         description="Manage your menu products and items"
+        user={user}
         actionButton={{
           label: "Add New Product",
           icon: <Plus className="w-4 h-4 mr-2" />,
           href: "/dashboard/products/create",
+          requiresSuperadmin: true,
+          module: "products",
         }}
       />
 
@@ -90,7 +96,7 @@ export default async function ProductsPage({
         <SearchForm placeholder="Search products..." defaultValue={search} />
 
         {/* Data table */}
-        <DataTable columns={columns} data={data} />
+        <ProductsTable data={data} user={user} />
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (

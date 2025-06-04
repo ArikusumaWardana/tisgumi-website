@@ -30,6 +30,8 @@ import {
   handlePriceInputChange,
   getNumericValue,
 } from "@/utils/currency";
+import { useFormLoading } from "@/hooks/use-form-loading";
+import FormLoading from "@/components/ui/form-loading";
 
 // Initial state for the form
 const initialState: ActionResult = {
@@ -85,8 +87,6 @@ export default function FormCustomerPricing({
   type = "create",
   customerData = null,
 }: FormCustomerPricingProps) {
-  const [customers, setCustomers] = useState<CustomerItem[]>([]);
-  const [products, setProducts] = useState<ProductItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [pricingCode, setPricingCode] = useState<string>("");
   const [pricingItems, setPricingItems] = useState<PricingItem[]>([
@@ -94,69 +94,74 @@ export default function FormCustomerPricing({
   ]);
 
   // Generate pricing code function
-  const generatePricingCode = async () => {
+  const generatePricingCode = async (): Promise<string> => {
     try {
       // Fetch count from actions
       const count = await getPricingCount();
       const nextNumber = count + 1;
       const formattedNumber = nextNumber.toString().padStart(3, "0");
-      const generatedCode = `PRC-${formattedNumber}`;
-      setPricingCode(generatedCode);
+      return `PRC-${formattedNumber}`;
     } catch (error) {
       // Fallback jika terjadi error
       const timestamp = Date.now();
       const codeNumber = timestamp % 1000;
       const formattedNumber = codeNumber.toString().padStart(3, "0");
-      const generatedCode = `PRC-${formattedNumber}`;
-      setPricingCode(generatedCode);
+      return `PRC-${formattedNumber}`;
     }
   };
+
+  // Use form loading hook
+  const {
+    isLoading,
+    loadingProgress,
+    error: loadingError,
+    data: loadedData,
+    generatedCode,
+  } = useFormLoading({
+    dependencies: [getCustomers, getProducts],
+    ...(type === "create" &&
+      !pricingCode && { autoGenerateCode: generatePricingCode }),
+    skipLoading: false, // Always load dependencies for pricing
+  });
+
+  // Extract customers and products from loaded data
+  const customers: CustomerItem[] = loadedData[0] || [];
+  const products: ProductItem[] = loadedData[1] || [];
+
+  // Set generated code when available
+  useEffect(() => {
+    if (generatedCode && type === "create" && !pricingCode) {
+      setPricingCode(generatedCode);
+    }
+  }, [generatedCode, type, pricingCode]);
+
+  // Initialize form data for update mode
+  useEffect(() => {
+    if (type === "update" && customerData && !isLoading) {
+      setSelectedCustomer(customerData.id.toString());
+      setPricingCode(customerData.custom_prices[0]?.code?.split("-")[0] || "");
+
+      // Map existing custom prices to pricing items
+      const existingItems = customerData.custom_prices.map((pricing) => ({
+        id: pricing.id,
+        product_id: pricing.product_id,
+        custom_price: pricing.custom_price,
+        formattedPrice: formatToRupiah(pricing.custom_price.toString()),
+      }));
+
+      setPricingItems(
+        existingItems.length > 0
+          ? existingItems
+          : [{ product_id: 0, custom_price: 0, formattedPrice: "" }]
+      );
+    }
+  }, [type, customerData, isLoading]);
 
   // State and form action for customer pricing
   const [state, formAction] = useActionState(
     type === "create" ? postCustomProductPricing : updateCustomerPricing,
     initialState
   );
-
-  // Fetch customers and products on component mount, then initialize form data
-  useEffect(() => {
-    const fetchData = async () => {
-      const [customersData, productsData] = await Promise.all([
-        getCustomers(),
-        getProducts(),
-      ]);
-      setCustomers(customersData);
-      setProducts(productsData);
-
-      // Auto generate pricing code for create mode
-      if (type === "create" && !pricingCode) {
-        generatePricingCode();
-      }
-
-      // Initialize form data for update mode after products are loaded
-      if (type === "update" && customerData) {
-        setSelectedCustomer(customerData.id.toString());
-        setPricingCode(
-          customerData.custom_prices[0]?.code?.split("-")[0] || ""
-        );
-
-        // Map existing custom prices to pricing items
-        const existingItems = customerData.custom_prices.map((pricing) => ({
-          id: pricing.id,
-          product_id: pricing.product_id,
-          custom_price: pricing.custom_price,
-          formattedPrice: formatToRupiah(pricing.custom_price.toString()),
-        }));
-
-        setPricingItems(
-          existingItems.length > 0
-            ? existingItems
-            : [{ product_id: 0, custom_price: 0, formattedPrice: "" }]
-        );
-      }
-    };
-    fetchData();
-  }, [type, customerData]);
 
   // Add new pricing item
   const addPricingItem = () => {
@@ -199,19 +204,13 @@ export default function FormCustomerPricing({
     const updatedItems = [...pricingItems];
     const currentItem = updatedItems[index];
     if (currentItem) {
-      const defaultPrice = selectedProduct?.default_price || 0;
-      const shouldUseDefaultPrice =
-        currentItem.custom_price === 0 && selectedProduct;
-
       updatedItems[index] = {
         ...currentItem,
         product_id: productIdNum,
-        custom_price: shouldUseDefaultPrice
-          ? defaultPrice
-          : currentItem.custom_price,
-        formattedPrice: shouldUseDefaultPrice
-          ? formatToRupiah(defaultPrice.toString())
-          : currentItem.formattedPrice,
+        custom_price: selectedProduct?.default_price || 0,
+        formattedPrice: selectedProduct
+          ? formatToRupiah(selectedProduct.default_price.toString())
+          : "",
       };
       setPricingItems(updatedItems);
     }
@@ -228,15 +227,39 @@ export default function FormCustomerPricing({
     );
   };
 
+  // Calculate total for all pricing items
+  const totalAmount = pricingItems.reduce(
+    (sum, item) => sum + item.custom_price,
+    0
+  );
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <FormLoading
+        loadingProgress={loadingProgress}
+        title="Preparing Pricing Form"
+        description="Loading customers, products, and generating pricing code..."
+      />
+    );
+  }
+
+  // Show loading error
+  if (loadingError) {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{loadingError}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className="space-y-6">
-      {/* Hidden fields for form data */}
+      {/* Hidden field for customer_id */}
       <input type="hidden" name="customer_id" value={selectedCustomer} />
-      <input type="hidden" name="form_type" value={type} />
-      <input type="hidden" name="code" value={pricingCode} />
-      {type === "update" && customerData && (
-        <input type="hidden" name="customer_data_id" value={customerData.id} />
-      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -244,178 +267,182 @@ export default function FormCustomerPricing({
         </h2>
 
         {state.error !== "" && (
-          <Alert variant="destructive" className="">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{state.error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="space-y-4">
-          {/* Customer Field - Full Width */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Pricing Code Field */}
           <div className="space-y-2">
+            <Label htmlFor="code">
+              Pricing Code <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              id="code"
+              name="code"
+              type="text"
+              placeholder="e.g., PRC-001"
+              required
+              value={pricingCode}
+              onChange={(e) => setPricingCode(e.target.value)}
+            />
+            <p className="text-xs text-gray-500">
+              Unique identifier for the custom pricing
+            </p>
+          </div>
+
+          {/* Customer Field */}
+          <div className="space-y-2 w-full">
             <Label htmlFor="customer_id">
               Customer <span className="text-red-600">*</span>
             </Label>
-            {type === "update" ? (
-              <div className="flex items-center h-10 px-3 py-2 text-sm border rounded-md bg-gray-50 dark:bg-gray-700 w-full">
-                {customerData?.name}
-              </div>
-            ) : (
-              <Select
-                name="customer_id"
-                value={selectedCustomer}
-                onValueChange={setSelectedCustomer}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a customer" />
-                </SelectTrigger>
-                <SelectContent className="w-full">
-                  {customers.map((customer, index) => (
-                    <SelectItem
-                      key={customer.id}
-                      value={customer.id.toString()}
-                    >
-                      {index + 1}. {customer.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <Select
+              name="customer_id"
+              value={selectedCustomer}
+              onValueChange={setSelectedCustomer}
+              disabled={type === "update"}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={
+                    customers.length === 0
+                      ? "No customers available"
+                      : "Select a customer"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent className="w-full">
+                {customers.map((customer) => (
+                  <SelectItem key={customer.id} value={customer.id.toString()}>
+                    {customer.name} ({customer.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-gray-500">
               {type === "update"
-                ? "Customer cannot be changed"
-                : "Choose the customer for this pricing"}
+                ? "Customer cannot be changed for existing pricing"
+                : "Choose the customer for custom pricing"}
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Pricing Items Section */}
+      {/* Pricing Items Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            Product Pricing
+          </h3>
+          <Button type="button" onClick={addPricingItem} variant="outline">
+            <Plus className="w-4 h-4 mr-1" />
+            Add Product
+          </Button>
+        </div>
+
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-md font-medium text-gray-900 dark:text-white">
-              Product Pricing <span className="text-red-600">*</span>
-            </h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addPricingItem}
-              className="flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Add Product
-            </Button>
-          </div>
-
           {pricingItems.map((item, index) => (
             <div
-              key={`pricing-item-${index}-${item.product_id}-${
-                item.id || "new"
-              }`}
-              className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50 space-y-4"
+              key={index}
+              className="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4"
             >
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
                   Product #{index + 1}
-                </h4>
+                </span>
                 {pricingItems.length > 1 && (
                   <Button
                     type="button"
+                    onClick={() => removePricingItem(index)}
                     variant="outline"
                     size="sm"
-                    onClick={() => removePricingItem(index)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 )}
               </div>
 
-              <div className="space-y-4">
-                {/* Product Selection - Full Width */}
-                <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Product Selection */}
+                <div className="space-y-2 w-full">
                   <Label htmlFor={`product-${index}`}>
                     Product <span className="text-red-600">*</span>
                   </Label>
                   <Select
-                    key={`product-select-${index}-${item.product_id}`}
-                    name={`product_items[${index}].product_id`}
-                    value={
-                      item.product_id > 0 ? item.product_id.toString() : ""
-                    }
+                    name={`pricing_items[${index}].product_id`}
+                    value={item.product_id.toString()}
                     onValueChange={(value) => handleProductSelect(index, value)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a product" />
+                      <SelectValue placeholder="Select product..." />
                     </SelectTrigger>
                     <SelectContent className="w-full">
-                      {getAvailableProducts(index).map(
-                        (product) => (
-                          <SelectItem
-                            key={product.id}
-                            value={product.id.toString()}
-                          >
-                            {product.name} - Rp{" "}
-                            {product.default_price.toLocaleString("id-ID")}
-                          </SelectItem>
-                        )
-                      )}
+                      {getAvailableProducts(index).map((product) => (
+                        <SelectItem
+                          key={product.id}
+                          value={product.id.toString()}
+                        >
+                          {product.name} (Default:{" "}
+                          {formatToRupiah(product.default_price.toString())})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Custom Price - Full Width with Currency Format */}
+                {/* Custom Price */}
                 <div className="space-y-2">
                   <Label htmlFor={`price-${index}`}>
                     Custom Price <span className="text-red-600">*</span>
                   </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                      Rp
-                    </span>
-                    <Input
-                      id={`price-display-${index}`}
-                      type="text"
-                      placeholder="e.g., 100,000"
-                      value={item.formattedPrice}
-                      onChange={(e) => handlePriceChange(index, e.target.value)}
-                      className="pl-8 w-full"
-                    />
-                    {/* Hidden input untuk nilai numerik yang akan dikirim ke server */}
+                  <Input
+                    id={`price-${index}`}
+                    type="text"
+                    placeholder="e.g., Rp 50,000"
+                    required
+                    value={item.formattedPrice}
+                    onChange={(e) => handlePriceChange(index, e.target.value)}
+                  />
+                  <input
+                    type="hidden"
+                    name={`pricing_items[${index}].custom_price`}
+                    value={item.custom_price}
+                  />
+                  {/* Hidden input for existing record ID */}
+                  {item.id && (
                     <input
                       type="hidden"
-                      name={`product_items[${index}].custom_price`}
-                      value={item.custom_price}
+                      name={`pricing_items[${index}].id`}
+                      value={item.id}
                     />
-                  </div>
+                  )}
                   <p className="text-xs text-gray-500">
-                    Price in Indonesian Rupiah (e.g., 100,000)
+                    Special price for this customer
                   </p>
                 </div>
               </div>
-
-              {/* Hidden field for existing item ID in update mode */}
-              {type === "update" && item.id && (
-                <input
-                  type="hidden"
-                  name={`product_items[${index}].id`}
-                  value={item.id}
-                />
-              )}
             </div>
           ))}
+        </div>
+
+        {/* Total Section */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+              Total Custom Pricing:
+            </span>
+            <span className="text-lg font-bold text-blue-900 dark:text-blue-100">
+              {formatToRupiah(totalAmount.toString())}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-3">
-        <Link
-          href={
-            type === "update" && customerData
-              ? `/dashboard/pricing/customer/${customerData.id}`
-              : "/dashboard/pricing"
-          }
-        >
+        <Link href="/dashboard/pricing">
           <Button variant="outline">Cancel</Button>
         </Link>
         <SubmitButton />
