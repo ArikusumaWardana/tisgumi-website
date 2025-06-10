@@ -1,6 +1,6 @@
 "use server";
 
-import { adminSchema } from "@/lib/schema";
+import { adminSchema, adminEditSchema } from "@/lib/schema";
 import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
@@ -110,21 +110,20 @@ export async function updateAdmin(
     };
   }
 
-  const validate = adminSchema.safeParse({
+  const passwordValue = formData.get("password") as string;
+
+  const validate = adminEditSchema.safeParse({
     code: formData.get("code"),
     name: formData.get("name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
-    password: formData.get("password"),
+    password: passwordValue || undefined,
   });
 
   // If the validation fails, return an error message
   if (!validate.success) {
     return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
-
-  // Hash the password input
-  const hashedPassword = await bcrypt.hash(validate.data.password, 12);
 
   // Format phone number with +62 prefix
   const formattedPhone = `+62${validate.data.phone}`;
@@ -136,20 +135,28 @@ export async function updateAdmin(
     };
   }
 
+  // Prepare update data
+  const updateData: any = {
+    code: validate.data.code,
+    name: validate.data.name,
+    email: validate.data.email,
+    phone: formattedPhone,
+    updated_at: new Date(),
+  };
+
+  // Only update password if it's provided
+  if (validate.data.password && validate.data.password.trim() !== "") {
+    const hashedPassword = await bcrypt.hash(validate.data.password, 12);
+    updateData.password = hashedPassword;
+  }
+
   // Try to update the admin
   try {
     await prisma.user.update({
       where: {
         id: id,
       },
-      data: {
-        code: validate.data.code,
-        name: validate.data.name,
-        email: validate.data.email,
-        phone: formattedPhone,
-        password: hashedPassword,
-        updated_at: new Date(),
-      },
+      data: updateData,
     });
   } catch (error) {
     console.log(error);

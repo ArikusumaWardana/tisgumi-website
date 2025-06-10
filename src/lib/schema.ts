@@ -51,6 +51,27 @@ export const adminSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters long" }),
 });
 
+export const adminEditSchema = z.object({
+  code: z
+    .string({ required_error: "Code is required" })
+    .min(4, { message: "Code must be at least 4 characters long" }),
+  name: z
+    .string({ required_error: "Name is required" })
+    .min(4, { message: "Name must be at least 4 characters long" }),
+  email: z
+    .string({ required_error: "Email is required" })
+    .email({ message: "Invalid email address" }),
+  phone: z
+    .string({ required_error: "Phone is required" })
+    .min(10, { message: "Phone must be at least 10 characters long" }),
+  password: z
+    .string()
+    .optional()
+    .refine((val) => !val || val.length >= 8, {
+      message: "Password must be at least 8 characters long if provided",
+    }),
+});
+
 export const productSchema = z.object({
   code: z
     .string({ required_error: "Code is required" })
@@ -96,11 +117,14 @@ export const singleCustomProductPricingSchema = z.object({
     .min(0, { message: "Price must be at least 0" }),
 });
 
-
 export const orderSchema = z.object({
-  code: z.string({ required_error: "Code is required" }).min(4, { message: "Code must be at least 4 characters long" }),
+  code: z
+    .string({ required_error: "Code is required" })
+    .min(4, { message: "Code must be at least 4 characters long" }),
   customer_id: z.number({ required_error: "Customer is required" }),
   product_id: z.number({ required_error: "Product is required" }),
-  quantity: z.number({ required_error: "Quantity is required" }).min(1, { message: "Quantity must be at least 1" }),
+  quantity: z
+    .number({ required_error: "Quantity is required" })
+    .min(1, { message: "Quantity must be at least 1" }),
   payment_date: z.date({ required_error: "Payment date is required" }),
 });

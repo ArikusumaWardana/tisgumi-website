@@ -48,6 +48,11 @@ export default function FormAdmin({
   // State for code input
   const [codeValue, setCodeValue] = useState<string>(data?.code || "");
 
+  // State for password fields
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+
   // Generate admin code function
   const generateAdminCode = async (): Promise<string> => {
     try {
@@ -117,6 +122,44 @@ export default function FormAdmin({
 
     setPhoneDisplay(formattedPhone);
     setPhoneValue(formattedPhone);
+  };
+
+  // Handle password validation
+  const validatePasswords = (pwd: string, confirmPwd: string) => {
+    if (type === "update" && pwd === "" && confirmPwd === "") {
+      // Both empty is valid for update (keeps current password)
+      setPasswordError("");
+      return true;
+    }
+
+    if (pwd !== confirmPwd) {
+      setPasswordError("Passwords do not match");
+      return false;
+    }
+
+    if (pwd && pwd.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
+      return false;
+    }
+
+    setPasswordError("");
+    return true;
+  };
+
+  // Handle password change
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    validatePasswords(newPassword, confirmPassword);
+  };
+
+  // Handle confirm password change
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newConfirmPassword = e.target.value;
+    setConfirmPassword(newConfirmPassword);
+    validatePasswords(password, newConfirmPassword);
   };
 
   // Update the admin with the id
@@ -254,14 +297,21 @@ export default function FormAdmin({
           {/* Password Field */}
           <div className="space-y-2">
             <Label htmlFor="password">
-              Password <span className="text-red-600">*</span>
+              Password{" "}
+              {type === "create" && <span className="text-red-600">*</span>}
             </Label>
             <Input
               id="password"
               name="password"
               type="password"
-              placeholder="e.g., **********"
+              placeholder={
+                type === "create"
+                  ? "e.g., **********"
+                  : "Leave empty to keep current password"
+              }
               required={type === "create"}
+              value={password}
+              onChange={handlePasswordChange}
             />
             <p className="text-xs text-gray-500">
               {type === "create"
@@ -273,20 +323,30 @@ export default function FormAdmin({
           {/* Confirm Password Field */}
           <div className="space-y-2">
             <Label htmlFor="confirm_password">
-              Confirm Password <span className="text-red-600">*</span>
+              Confirm Password{" "}
+              {type === "create" && <span className="text-red-600">*</span>}
             </Label>
             <Input
               id="confirm_password"
               name="confirm_password"
               type="password"
-              placeholder="e.g., **********"
+              placeholder={
+                type === "create"
+                  ? "e.g., **********"
+                  : "Leave empty to keep current password"
+              }
               required={type === "create"}
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
             />
             <p className="text-xs text-gray-500">
               {type === "create"
                 ? "Re-enter the password"
                 : "Leave empty to keep current password"}
             </p>
+            {passwordError && (
+              <p className="text-xs text-red-600">{passwordError}</p>
+            )}
           </div>
         </div>
       </div>
