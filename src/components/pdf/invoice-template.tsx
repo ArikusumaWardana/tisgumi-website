@@ -6,84 +6,221 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: "#ffffff",
-    padding: 30,
-    fontSize: 12,
+    padding: 40,
+    fontSize: 11,
     fontFamily: "Helvetica",
+    color: "#333",
   },
-  header: {
-    marginBottom: 20,
-    borderBottom: "2pt solid #333",
-    paddingBottom: 10,
+  // Header section
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 40,
+    alignItems: "flex-start",
   },
-  title: {
+  headerLeft: {
+    width: "60%",
+    flexDirection: "column",
+  },
+  companyBranding: {
+    flexDirection: "column",
+  },
+  headerRight: {
+    width: "35%",
+    alignItems: "flex-end",
+  },
+  companyName: {
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
+    color: "#333",
+    marginBottom: 8,
+    letterSpacing: 1,
   },
-  subtitle: {
-    fontSize: 14,
-    textAlign: "center",
+  companyTagline: {
+    fontSize: 10,
     color: "#666",
-  },
-  section: {
+    fontStyle: "italic",
     marginBottom: 15,
   },
-  row: {
-    flexDirection: "row",
-    marginBottom: 5,
+  companyInfo: {
+    fontSize: 9,
+    color: "#666",
+    lineHeight: 1.4,
+    marginBottom: 2,
   },
-  label: {
-    width: "30%",
+  companyInfoContainer: {
+    marginTop: 5,
+  },
+  invoiceTitle: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#333",
+    letterSpacing: 2,
+    marginTop: 0,
+    marginBottom: 15,
+  },
+  // Invoice details (without background)
+  invoiceDetails: {
+    marginTop: 0,
+  },
+  detailRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  detailLabel: {
+    width: "50%",
+    fontSize: 11,
+    color: "#666",
     fontWeight: "bold",
   },
-  value: {
-    width: "70%",
+  detailValue: {
+    width: "50%",
+    fontSize: 11,
+    color: "#333",
   },
+  // Customer and payment info
+  infoSection: {
+    marginBottom: 40,
+  },
+  infoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  infoLeft: {
+    width: "45%",
+  },
+  infoRight: {
+    width: "45%",
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 15,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  infoText: {
+    fontSize: 11,
+    color: "#666",
+    marginBottom: 4,
+    lineHeight: 1.4,
+  },
+  // Table styles
   table: {
-    marginTop: 20,
+    marginBottom: 30,
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#f0f0f0",
-    padding: 8,
-    fontWeight: "bold",
-    borderBottom: "1pt solid #333",
+    backgroundColor: "#f8f9fa",
+    padding: 12,
+    borderTop: "1pt solid #e9ecef",
+    borderBottom: "1pt solid #e9ecef",
   },
   tableRow: {
     flexDirection: "row",
-    padding: 8,
-    borderBottom: "1pt solid #eee",
+    padding: 12,
+    borderBottom: "1pt solid #f1f3f4",
+    minHeight: 40,
   },
-  tableCol1: { width: "10%", textAlign: "center" },
-  tableCol2: { width: "40%" },
-  tableCol3: { width: "15%", textAlign: "center" },
-  tableCol4: { width: "20%", textAlign: "right" },
-  tableCol5: { width: "15%", textAlign: "right" },
-  total: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#f9f9f9",
-    border: "1pt solid #ddd",
+  // Table columns
+  colDescription: {
+    width: "50%",
+    fontSize: 11,
+    paddingRight: 10,
+  },
+  colUnitPrice: {
+    width: "20%",
+    textAlign: "right",
+    fontSize: 11,
+  },
+  colQty: {
+    width: "15%",
+    textAlign: "center",
+    fontSize: 11,
+  },
+  colTotal: {
+    width: "15%",
+    textAlign: "right",
+    fontSize: 11,
+  },
+  // Table header text
+  tableHeaderText: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#666",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  // Product details
+  productName: {
+    fontSize: 11,
+    color: "#333",
+    fontWeight: "normal",
+    marginBottom: 2,
+  },
+  productCode: {
+    fontSize: 9,
+    color: "#888",
+    fontStyle: "italic",
+  },
+  // Totals section
+  totalsContainer: {
+    marginTop: 5,
+    alignItems: "flex-end",
+  },
+  totalsBox: {
+    width: "40%",
+    minWidth: 200,
   },
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 5,
+    marginBottom: 8,
+    paddingVertical: 4,
+  },
+  subtotalRow: {
+    borderTop: "1pt solid #e9ecef",
+    paddingTop: 12,
+    marginTop: 8,
+  },
+  finalTotalRow: {
+    borderTop: "2pt solid #333",
+    paddingTop: 12,
+    marginTop: 8,
   },
   totalLabel: {
-    fontWeight: "bold",
-    fontSize: 14,
+    fontSize: 11,
+    color: "#666",
+    textTransform: "uppercase",
   },
   totalValue: {
+    fontSize: 11,
+    color: "#333",
     fontWeight: "bold",
-    fontSize: 14,
   },
+  finalTotalLabel: {
+    fontSize: 13,
+    color: "#333",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
+  finalTotalValue: {
+    fontSize: 13,
+    color: "#333",
+    fontWeight: "bold",
+  },
+  // Footer
   footer: {
-    marginTop: 30,
+    marginTop: 60,
+    paddingTop: 20,
+    borderTop: "1pt solid #e9ecef",
+  },
+  footerNote: {
+    fontSize: 9,
+    color: "#888",
     textAlign: "center",
-    fontSize: 10,
-    color: "#666",
+    lineHeight: 1.4,
   },
 });
 
@@ -129,157 +266,183 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
   showPrices,
 }) => {
   const formatCurrency = (amount: number) => {
-    return `Rp ${amount.toLocaleString("id-ID")}`;
+    return `Rp. ${amount.toLocaleString("id-ID")}`;
   };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
       year: "numeric",
-      month: "long",
-      day: "numeric",
     });
   };
+
+  const formatPhoneNumber = (phone: string) => {
+    // Add + prefix if not already present
+    return phone.startsWith("+") ? phone : `+${phone}`;
+  };
+
+  const total = orderData.total_amount;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            {showPrices ? "INVOICE WITH PRICES" : "INVOICE WITHOUT PRICES"}
-          </Text>
-          <Text style={styles.subtitle}>Tisgumi Company</Text>
+        <View style={styles.headerContainer}>
+          <View style={styles.headerLeft}>
+            <View style={styles.companyBranding}>
+              <Text style={styles.companyName}>TISGUMI</Text>
+              <Text style={styles.companyTagline}>
+                Authentic Indonesian Restaurant
+              </Text>
+              <View style={styles.companyInfoContainer}>
+                <Text style={styles.companyInfo}>
+                  Jl. Gatot Subroto Tim., Tonja, Kec. Denpasar Utara, Kota
+                  Denpasar, Bali
+                </Text>
+                <Text style={styles.companyInfo}>
+                  Jl. Hasanuddin No.30, Dauh Puri Kangin, Kec. Denpasar Bar.,
+                  Kota Denpasar, Bali
+                </Text>
+                <Text style={styles.companyInfo}>
+                  Jl. Kartika Plaza, Kuta, Kec. Kuta, Kabupaten Badung, Bali
+                </Text>
+                <Text style={styles.companyInfo}>
+                  +62 21 1234 5678 | info@tisgumi.com
+                </Text>
+                <Text style={styles.companyInfo}> www.tisgumi.com</Text>
+                <Text style={styles.companyInfo}>
+                  Open Daily: 10:00 AM - 10:00 PM
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            <Text style={styles.invoiceTitle}>INVOICE</Text>
+            <View style={styles.invoiceDetails}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>INVOICE NO:</Text>
+                <Text style={styles.detailValue}>{orderData.code}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>DATE:</Text>
+                <Text style={styles.detailValue}>
+                  {formatDate(orderData.created_at)}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>STATUS:</Text>
+                <Text style={styles.detailValue}>
+                  {orderData.status.toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>SERVED BY:</Text>
+                <Text style={styles.detailValue}>
+                  {orderData.created_by_user.name}
+                </Text>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {/* Order Information */}
-        <View style={styles.section}>
-          <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
-            Order Information
-          </Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>Order Code:</Text>
-            <Text style={styles.value}>{orderData.code}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{formatDate(orderData.created_at)}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Status:</Text>
-            <Text style={styles.value}>
-              {orderData.status === "lunas" ? "Paid" : "Unpaid"}
-            </Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Created By:</Text>
-            <Text style={styles.value}>
-              {orderData.created_by_user.name} ({orderData.created_by_user.code}
-              )
-            </Text>
-          </View>
-        </View>
-
-        {/* Customer Information */}
-        <View style={styles.section}>
-          <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
-            Customer Information
-          </Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>Customer Code:</Text>
-            <Text style={styles.value}>{orderData.customer.code}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Customer Name:</Text>
-            <Text style={styles.value}>{orderData.customer.name}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Phone:</Text>
-            <Text style={styles.value}>{orderData.customer.phone}</Text>
+        {/* Customer and Payment Information */}
+        <View style={styles.infoSection}>
+          <View style={styles.infoContainer}>
+            <View style={styles.infoLeft}>
+              <Text style={styles.sectionTitle}>ISSUED TO:</Text>
+              <Text style={styles.infoText}>{orderData.customer.name}</Text>
+              <Text style={styles.infoText}>
+                Customer Code: {orderData.customer.code}
+              </Text>
+              <Text style={styles.infoText}>
+                Phone: {formatPhoneNumber(orderData.customer.phone)}
+              </Text>
+            </View>
+            <View style={styles.infoRight}>
+              <Text style={styles.sectionTitle}>PAY TO:</Text>
+              <Text style={styles.infoText}>Tisgumi Company</Text>
+              <Text style={styles.infoText}>Bank: Bank Central Asia (BCA)</Text>
+              <Text style={styles.infoText}>
+                Account Name: Tisgumi Restaurant
+              </Text>
+              <Text style={styles.infoText}>Account No: 1234 5678 9012</Text>
+            </View>
           </View>
         </View>
 
         {/* Order Items Table */}
         <View style={styles.table}>
-          <Text style={{ fontSize: 16, fontWeight: "bold", marginBottom: 10 }}>
-            Order Items
-          </Text>
-
           {/* Table Header */}
           <View style={styles.tableHeader}>
-            <Text style={styles.tableCol1}>No.</Text>
-            <Text style={styles.tableCol2}>Product Name</Text>
-            <Text style={styles.tableCol3}>Qty</Text>
+            <Text style={[styles.colDescription, styles.tableHeaderText]}>
+              DESCRIPTION
+            </Text>
             {showPrices && (
-              <>
-                <Text style={styles.tableCol4}>Price</Text>
-                <Text style={styles.tableCol5}>Subtotal</Text>
-              </>
+              <Text style={[styles.colUnitPrice, styles.tableHeaderText]}>
+                UNIT PRICE
+              </Text>
+            )}
+            <Text style={[styles.colQty, styles.tableHeaderText]}>QTY</Text>
+            {showPrices && (
+              <Text style={[styles.colTotal, styles.tableHeaderText]}>
+                TOTAL
+              </Text>
             )}
           </View>
 
           {/* Table Rows */}
-          {orderData.order_items.map((item, index) => (
+          {orderData.order_items.map((item) => (
             <View key={item.id} style={styles.tableRow}>
-              <Text style={styles.tableCol1}>{index + 1}</Text>
-              <Text style={styles.tableCol2}>
-                {item.product.name}
-                {"\n"}
-                <Text style={{ fontSize: 10, color: "#666" }}>
+              <View style={styles.colDescription}>
+                <Text style={styles.productName}>{item.product.name}</Text>
+                <Text style={styles.productCode}>
                   {item.product.code} • {item.product.category.name}
                 </Text>
-              </Text>
-              <Text style={styles.tableCol3}>{item.quantity}</Text>
+              </View>
               {showPrices && (
-                <>
-                  <Text style={styles.tableCol4}>
-                    {formatCurrency(item.price_at_time)}
-                  </Text>
-                  <Text style={styles.tableCol5}>
-                    {formatCurrency(item.price_at_time * item.quantity)}
-                  </Text>
-                </>
+                <Text style={styles.colUnitPrice}>
+                  {formatCurrency(item.price_at_time)}
+                </Text>
+              )}
+              <Text style={styles.colQty}>{item.quantity}</Text>
+              {showPrices && (
+                <Text style={styles.colTotal}>
+                  {formatCurrency(item.price_at_time * item.quantity)}
+                </Text>
               )}
             </View>
           ))}
         </View>
 
-        {/* Total Section (only for invoices with prices) */}
-        {showPrices && (
-          <View style={styles.total}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Items:</Text>
-              <Text style={styles.totalValue}>
-                {orderData.total_items} items
-              </Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Amount:</Text>
-              <Text style={styles.totalValue}>
-                {formatCurrency(orderData.total_amount)}
-              </Text>
-            </View>
+        {/* Totals */}
+        <View style={styles.totalsContainer}>
+          <View style={styles.totalsBox}>
+            {showPrices ? (
+              <View style={[styles.totalRow, styles.finalTotalRow]}>
+                <Text style={styles.finalTotalLabel}>TOTAL</Text>
+                <Text style={styles.finalTotalValue}>
+                  {formatCurrency(total)}
+                </Text>
+              </View>
+            ) : (
+              <View style={[styles.totalRow, styles.subtotalRow]}>
+                <Text style={styles.totalLabel}>TOTAL ITEMS</Text>
+                <Text style={styles.totalValue}>
+                  {orderData.total_items} items
+                </Text>
+              </View>
+            )}
           </View>
-        )}
-
-        {/* Summary for invoices without prices */}
-        {!showPrices && (
-          <View style={styles.total}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Items:</Text>
-              <Text style={styles.totalValue}>
-                {orderData.total_items} items
-              </Text>
-            </View>
-          </View>
-        )}
+        </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>
+          <Text style={styles.footerNote}>
             This invoice was generated automatically on{" "}
-            {new Date().toLocaleDateString("id-ID")}
+            {new Date().toLocaleDateString("id-ID")}.{"\n"}
+            Thank you for your business with Tisgumi!
           </Text>
-          <Text>Thank you for your business!</Text>
         </View>
       </Page>
     </Document>
