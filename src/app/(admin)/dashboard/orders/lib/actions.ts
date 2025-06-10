@@ -7,6 +7,7 @@ import { getUser } from "@/lib/auth";
 
 // Function to generate next order code (server action)
 export async function generateOrderCode() {
+  console.log("generateOrderCode server action called");
   try {
     const latestOrder = await prisma.order.findFirst({
       orderBy: {
@@ -18,15 +19,22 @@ export async function generateOrderCode() {
     });
 
     if (!latestOrder) {
+      console.log("No existing orders found, returning ORD-001");
       return "ORD-001";
     }
 
     // Extract number from latest code and increment
     const codeNumber = parseInt(latestOrder.code.split("-")[1] || "0") + 1;
-    return `ORD-${codeNumber.toString().padStart(3, "0")}`;
+    const newCode = `ORD-${codeNumber.toString().padStart(3, "0")}`;
+    console.log(
+      `Generated new order code: ${newCode} (from latest: ${latestOrder.code})`
+    );
+    return newCode;
   } catch (error) {
     console.error("Error generating order code:", error);
-    return `ORD-${Date.now()}`;
+    const fallbackCode = `ORD-${Date.now().toString().slice(-6)}`;
+    console.log(`Using fallback code: ${fallbackCode}`);
+    return fallbackCode;
   }
 }
 
@@ -36,34 +44,85 @@ export async function getCustomerProductPrice(
   productId: number
 ) {
   try {
-    // First check if customer has custom pricing for this product
-    const customPricing = await prisma.customProductPricing.findFirst({
-      where: {
-        customer_id: customerId,
-        product_id: productId,
-        deleted_at: null,
-      },
-    });
+    // Optimized query: get custom pricing and product in parallel
+    const [customPricing, product] = await Promise.all([
+      prisma.customProductPricing.findFirst({
+        where: {
+          customer_id: customerId,
+          product_id: productId,
+          deleted_at: null,
+        },
+        select: {
+          custom_price: true,
+        },
+      }),
+      prisma.product.findFirst({
+        where: {
+          id: productId,
+          deleted_at: null,
+        },
+        select: {
+          default_price: true,
+        },
+      }),
+    ]);
 
-    if (customPricing) {
-      return customPricing.custom_price;
-    }
-
-    // If no custom pricing, get default price from product
-    const product = await prisma.product.findFirst({
-      where: {
-        id: productId,
-        deleted_at: null,
-      },
-      select: {
-        default_price: true,
-      },
-    });
-
-    return product?.default_price || 0;
+    // Return custom price if exists, otherwise default price
+    return customPricing?.custom_price ?? product?.default_price ?? 0;
   } catch (error) {
     console.error("Error fetching customer product price:", error);
     return 0;
+  }
+}
+
+// Batch function to get prices for multiple products at once
+export async function getCustomerProductPrices(
+  customerId: number,
+  productIds: number[]
+) {
+  if (!productIds.length) return {};
+
+  try {
+    // Get all custom pricing and products in parallel
+    const [customPricings, products] = await Promise.all([
+      prisma.customProductPricing.findMany({
+        where: {
+          customer_id: customerId,
+          product_id: { in: productIds },
+          deleted_at: null,
+        },
+        select: {
+          product_id: true,
+          custom_price: true,
+        },
+      }),
+      prisma.product.findMany({
+        where: {
+          id: { in: productIds },
+          deleted_at: null,
+        },
+        select: {
+          id: true,
+          default_price: true,
+        },
+      }),
+    ]);
+
+    // Create price lookup map
+    const priceMap: Record<number, number> = {};
+    const customPriceMap = new Map(
+      customPricings.map((cp) => [cp.product_id, cp.custom_price])
+    );
+
+    products.forEach((product) => {
+      priceMap[product.id] =
+        customPriceMap.get(product.id) ?? product.default_price;
+    });
+
+    return priceMap;
+  } catch (error) {
+    console.error("Error fetching customer product prices:", error);
+    return {};
   }
 }
 

@@ -5,10 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
+import { useCachedFormData } from "@/hooks/use-cached-data";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
-import { createOrder, getCustomerProductPrice } from "../lib/actions";
+import {
+  createOrder,
+  getCustomerProductPrice,
+  generateOrderCode,
+} from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
 import {
@@ -23,19 +28,6 @@ import {
 const initialState: ActionResult = {
   error: "",
 };
-
-interface Customer {
-  id: number;
-  code: string;
-  name: string;
-}
-
-interface Product {
-  id: number;
-  code: string;
-  name: string;
-  default_price: number;
-}
 
 interface OrderItem {
   product_id: number;
@@ -57,88 +49,50 @@ function SubmitButton() {
 
 // Form component for creating orders
 export default function FormOrder() {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  // Use cached data hook
+  const {
+    customers,
+    products,
+    isLoading: isLoadingData,
+    usingCache,
+  } = useCachedFormData();
+
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [orderCode, setOrderCode] = useState<string>("");
   const [paymentStatus, setPaymentStatus] = useState<string>("belum_lunas");
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [usingFallback, setUsingFallback] = useState<boolean>(false);
-  const [loadingProgress, setLoadingProgress] =
-    useState<string>("Initializing...");
+  const [isLoadingOrderCode, setIsLoadingOrderCode] = useState<boolean>(true);
 
   // State for form action
   const [state, formAction] = useActionState(createOrder, initialState);
 
-  // Fetch customers, products, and generate order code on component mount
+  // Generate order code on component mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchOrderCode = async () => {
       try {
-        setLoadingProgress("Loading data via API...");
+        const generatedOrderCode = await generateOrderCode();
 
-        // Use API routes directly to avoid Server Action issues
-        const [customersResponse, productsResponse, orderCodeResponse] =
-          await Promise.all([
-            fetch("/api/customers"),
-            fetch("/api/products"),
-            fetch("/api/orders/generate-code"),
-          ]);
-
-        if (
-          !customersResponse.ok ||
-          !productsResponse.ok ||
-          !orderCodeResponse.ok
-        ) {
-          throw new Error("API requests failed");
-        }
-
-        setLoadingProgress("Processing data...");
-
-        const [customersData, productsData, orderCodeData] = await Promise.all([
-          customersResponse.json(),
-          productsResponse.json(),
-          orderCodeResponse.json(),
-        ]);
-
-        // Validate API data
-        const isValidCustomers =
-          Array.isArray(customersData) && customersData.length >= 0;
-        const isValidProducts =
-          Array.isArray(productsData) && productsData.length >= 0;
-        const isValidOrderCode =
-          orderCodeData?.orderCode &&
-          typeof orderCodeData.orderCode === "string";
-
-        if (isValidCustomers && isValidProducts && isValidOrderCode) {
-          setLoadingProgress("Setting up form...");
-          setCustomers(customersData);
-          setProducts(productsData);
-          setOrderCode(orderCodeData.orderCode);
+        if (generatedOrderCode && typeof generatedOrderCode === "string") {
+          setOrderCode(generatedOrderCode);
         } else {
-          throw new Error("Invalid data structure from API");
+          // Fallback order code
+          setOrderCode(`ORD-${Date.now().toString().slice(-6)}`);
         }
       } catch (error) {
-        console.error("API loading failed:", error);
-
-        // Fallback to minimal setup
-        setLoadingProgress("Using fallback setup...");
-        setCustomers([]);
-        setProducts([]);
+        console.error("Order code generation failed:", error);
+        // Fallback order code
         setOrderCode(`ORD-${Date.now().toString().slice(-6)}`);
-        setUsingFallback(true);
       }
 
-      setIsLoading(false);
+      setIsLoadingOrderCode(false);
     };
 
-    // Start loading immediately
-    fetchData();
+    fetchOrderCode();
   }, []);
 
   // Show loading state - wait until ALL data is ready
-  if (isLoading) {
+  if (isLoadingData || isLoadingOrderCode) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header Skeleton */}
@@ -215,7 +169,9 @@ export default function FormOrder() {
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
             <span className="text-sm text-blue-600 dark:text-blue-400">
-              {loadingProgress}
+              {isLoadingData
+                ? "Loading form data..."
+                : "Generating order code..."}
             </span>
           </div>
         </div>
@@ -414,16 +370,15 @@ export default function FormOrder() {
           </Alert>
         )}
 
-        {usingFallback && (
+        {usingCache && (
           <Alert
             variant="default"
-            className="border-yellow-200 bg-yellow-50 text-yellow-800"
+            className="border-blue-200 bg-blue-50 text-blue-800"
           >
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Loading data using fallback mode due to server action issues. Some
-              features might be limited. Try refreshing the page for full
-              functionality.
+              Using cached data to improve performance. Data may be up to 5
+              minutes old.
             </AlertDescription>
           </Alert>
         )}

@@ -126,6 +126,9 @@ model Customer {
   @@index([deleted_at, created_at])
   @@index([created_at])
   @@index([deleted_at])
+  // Optimized indexes for customer search
+  @@index([name, deleted_at])
+  @@index([code, deleted_at])
   @@map("customers")
 }
 
@@ -153,6 +156,9 @@ model Order {
   @@index([customer_id, deleted_at])
   @@index([created_at])
   @@index([payment_date])
+  // Optimized indexes for orders pagination and search
+  @@index([deleted_at, created_at, customer_id])
+  @@index([code, deleted_at])
   @@map("orders")
 }
 
@@ -214,5 +220,7 @@ model CustomProductPricing {
   @@index([product_id, deleted_at])
   @@index([deleted_at, created_at])
   @@index([deleted_at])
+  // Optimized composite index for price lookup
+  @@index([customer_id, product_id, deleted_at])
   @@map("custom_product_pricings")
 }

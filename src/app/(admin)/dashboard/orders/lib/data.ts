@@ -1,5 +1,6 @@
 import prisma from "../../../../../../lib/prisma";
 import { PaginationInfo } from "@/components/ui/pagination";
+import { measureAsync } from "@/utils/performance";
 
 interface GetOrdersParams {
   page?: number;
@@ -64,13 +65,9 @@ interface OrderWithTotals {
       };
     };
   }>;
-  invoices: Array<{
-    id: number;
-    order_id: number;
-    file_url: string;
-    show_price: boolean;
-    created_at: Date;
-  }>;
+  _count: {
+    invoices: number;
+  };
   total_amount: number;
   total_items: number;
 }
@@ -78,57 +75,6 @@ interface OrderWithTotals {
 interface GetOrdersResult {
   data: OrderWithTotals[];
   pagination: PaginationInfo;
-}
-
-// Function to get all orders (backward compatibility)
-export async function getOrders() {
-  try {
-    // Get all orders from the database with relations
-    const orders = await prisma.order.findMany({
-      where: {
-        deleted_at: null,
-      },
-      include: {
-        customer: true,
-        created_by_user: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        order_items: {
-          include: {
-            product: {
-              include: {
-                category: true,
-              },
-            },
-          },
-        },
-        invoices: true,
-      },
-      orderBy: {
-        created_at: "desc",
-      },
-    });
-
-    // Calculate total for each order
-    return orders.map((order) => ({
-      ...order,
-      total_amount: order.order_items.reduce(
-        (sum, item) => sum + item.price_at_time * item.quantity,
-        0
-      ),
-      total_items: order.order_items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      ),
-    }));
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    return [];
-  }
 }
 
 // Function to get paginated orders with optimized aggregation
@@ -139,112 +85,162 @@ export async function getOrdersPaginated({
   startDate,
   endDate,
 }: GetOrdersParams = {}): Promise<GetOrdersResult> {
-  try {
-    const skip = (page - 1) * limit;
+  return measureAsync(
+    "getOrdersPaginated",
+    async () => {
+      try {
+        const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {
-      deleted_at: null,
-      ...(search && {
-        OR: [
-          { code: { contains: search, mode: "insensitive" as const } },
-          {
-            customer: {
-              name: { contains: search, mode: "insensitive" as const },
-            },
-          },
-          {
-            customer: {
-              code: { contains: search, mode: "insensitive" as const },
-            },
-          },
-        ],
-      }),
-    };
+        // Build where clause
+        const where: any = {
+          deleted_at: null,
+          ...(search && {
+            OR: [
+              { code: { contains: search, mode: "insensitive" as const } },
+              {
+                customer: {
+                  name: { contains: search, mode: "insensitive" as const },
+                },
+              },
+              {
+                customer: {
+                  code: { contains: search, mode: "insensitive" as const },
+                },
+              },
+            ],
+          }),
+        };
 
-    // Add date filtering
-    if (startDate || endDate) {
-      where.created_at = {};
-      if (startDate) {
-        where.created_at.gte = new Date(startDate);
-      }
-      if (endDate) {
-        // Add time to end of day for endDate
-        const endOfDay = new Date(endDate);
-        endOfDay.setHours(23, 59, 59, 999);
-        where.created_at.lte = endOfDay;
-      }
-    }
+        // Add date filtering
+        if (startDate || endDate) {
+          where.created_at = {};
+          if (startDate) {
+            where.created_at.gte = new Date(startDate);
+          }
+          if (endDate) {
+            // Add time to end of day for endDate
+            const endOfDay = new Date(endDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            where.created_at.lte = endOfDay;
+          }
+        }
 
-    // Get orders and total count in parallel
-    const [orders, total] = await Promise.all([
-      prisma.order.findMany({
-        where,
-        include: {
-          customer: true,
-          created_by_user: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-          order_items: {
+        // Get orders and total count in parallel
+        const [orders, total] = await Promise.all([
+          prisma.order.findMany({
+            where,
             include: {
-              product: {
-                include: {
-                  category: true,
+              customer: {
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                  phone: true,
+                  status: true,
+                  created_at: true,
+                  updated_at: true,
+                  deleted_at: true,
+                },
+              },
+              created_by_user: {
+                select: {
+                  id: true,
+                  name: true,
+                  code: true,
+                },
+              },
+              order_items: {
+                select: {
+                  id: true,
+                  code: true,
+                  order_id: true,
+                  product_id: true,
+                  quantity: true,
+                  price_at_time: true,
+                  created_at: true,
+                  updated_at: true,
+                  deleted_at: true,
+                  product: {
+                    select: {
+                      id: true,
+                      code: true,
+                      name: true,
+                      default_price: true,
+                      status: true,
+                      category_id: true,
+                      created_at: true,
+                      updated_at: true,
+                      deleted_at: true,
+                      // Only include category for order_items that need it
+                      category: {
+                        select: {
+                          id: true,
+                          code: true,
+                          name: true,
+                          created_at: true,
+                          updated_at: true,
+                          deleted_at: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              // Only include invoices when really needed - for now removing from table view
+              _count: {
+                select: {
+                  invoices: true,
                 },
               },
             },
+            orderBy: {
+              created_at: "desc",
+            },
+            skip,
+            take: limit,
+          }),
+          prisma.order.count({ where }),
+        ]);
+
+        // Calculate totals for each order
+        const ordersWithTotals: OrderWithTotals[] = orders.map((order) => ({
+          ...order,
+          total_amount: order.order_items.reduce(
+            (sum, item) => sum + item.price_at_time * item.quantity,
+            0
+          ),
+          total_items: order.order_items.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          ),
+        }));
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+          data: ordersWithTotals,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
           },
-          invoices: true,
-        },
-        orderBy: {
-          created_at: "desc",
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.order.count({ where }),
-    ]);
-
-    // Calculate totals for each order
-    const ordersWithTotals: OrderWithTotals[] = orders.map((order) => ({
-      ...order,
-      total_amount: order.order_items.reduce(
-        (sum, item) => sum + item.price_at_time * item.quantity,
-        0
-      ),
-      total_items: order.order_items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      ),
-    }));
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data: ordersWithTotals,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    return {
-      data: [],
-      pagination: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 0,
-      },
-    };
-  }
+        };
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        return {
+          data: [],
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            totalPages: 0,
+          },
+        };
+      }
+    },
+    { page, limit, search: !!search, dateFilter: !!(startDate || endDate) }
+  );
 }
 
 // Function to get order by id with full details (optimized)
@@ -256,7 +252,18 @@ export async function getOrderById(id: string) {
         deleted_at: null,
       },
       include: {
-        customer: true,
+        customer: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            phone: true,
+            status: true,
+            created_at: true,
+            updated_at: true,
+            deleted_at: true,
+          },
+        },
         created_by_user: {
           select: {
             id: true,
@@ -265,15 +272,53 @@ export async function getOrderById(id: string) {
           },
         },
         order_items: {
-          include: {
+          where: {
+            deleted_at: null,
+          },
+          select: {
+            id: true,
+            code: true,
+            order_id: true,
+            product_id: true,
+            quantity: true,
+            price_at_time: true,
+            created_at: true,
+            updated_at: true,
+            deleted_at: true,
             product: {
-              include: {
-                category: true,
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                default_price: true,
+                status: true,
+                category_id: true,
+                created_at: true,
+                updated_at: true,
+                deleted_at: true,
+                category: {
+                  select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                    created_at: true,
+                    updated_at: true,
+                    deleted_at: true,
+                  },
+                },
               },
             },
           },
         },
-        invoices: true,
+        invoices: {
+          select: {
+            id: true,
+            order_id: true,
+            file_url: true,
+            show_price: true,
+            created_at: true,
+          },
+        },
       },
     });
 

@@ -63,13 +63,9 @@ type OrderWithDetails = {
       };
     };
   }>;
-  invoices: Array<{
-    id: number;
-    order_id: number;
-    file_url: string;
-    show_price: boolean;
-    created_at: Date;
-  }>;
+  _count: {
+    invoices: number;
+  };
   total_amount: number;
   total_items: number;
 };
