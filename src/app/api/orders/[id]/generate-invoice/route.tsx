@@ -5,6 +5,10 @@ import { supabase } from "@/lib/supabase";
 import prisma from "../../../../../../lib/prisma";
 import React from "react";
 
+// Force no cache for this API route
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Types
 type Tparams = {
   id: string;
@@ -83,6 +87,7 @@ export async function POST(request: NextRequest, { params }: Context) {
     };
 
     console.log("Generating PDF buffer...");
+    console.log("Using InvoiceTemplate with Canvas logo (latest version)");
 
     // Generate PDF buffer
     const pdfBuffer = await renderToBuffer(
@@ -90,13 +95,27 @@ export async function POST(request: NextRequest, { params }: Context) {
     );
 
     console.log("PDF buffer generated, size:", pdfBuffer.length);
+    console.log("Template used: InvoiceTemplate with Canvas logo design");
 
     // Generate filename
     const timestamp = new Date().toISOString().split("T")[0];
     const priceType = showPrices ? "with-prices" : "without-prices";
     const filename = `invoice-${order.code}-${priceType}-${timestamp}.pdf`;
 
-    console.log("Uploading to Supabase:", filename);
+    console.log("Uploading to Supabase bucket 'invoices':", filename);
+    console.log("PDF buffer size for upload:", pdfBuffer.length);
+
+    // Check if bucket exists and is accessible
+    const { data: buckets, error: bucketsError } =
+      await supabase.storage.listBuckets();
+    if (bucketsError) {
+      console.error("Error listing buckets:", bucketsError);
+    } else {
+      console.log(
+        "Available buckets:",
+        buckets.map((b) => b.name)
+      );
+    }
 
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -109,16 +128,22 @@ export async function POST(request: NextRequest, { params }: Context) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
+      console.error(
+        "Upload error details:",
+        JSON.stringify(uploadError, null, 2)
+      );
       return NextResponse.json(
         {
           error: "Failed to upload PDF to storage",
           details: uploadError.message,
+          bucketInfo: buckets?.map((b) => b.name) || "Unable to fetch buckets",
         },
         { status: 500 }
       );
     }
 
     console.log("Upload successful:", uploadData);
+    console.log("Upload details:", JSON.stringify(uploadData, null, 2));
 
     // Get public URL
     const { data: urlData } = supabase.storage
@@ -126,6 +151,22 @@ export async function POST(request: NextRequest, { params }: Context) {
       .getPublicUrl(filename);
 
     console.log("Public URL:", urlData.publicUrl);
+
+    // Verify file exists by checking if we can list it
+    const { data: fileList, error: listError } = await supabase.storage
+      .from("invoices")
+      .list("", { search: filename });
+
+    if (listError) {
+      console.error("Error verifying file upload:", listError);
+    } else {
+      console.log(
+        "File verification - found files:",
+        fileList?.map((f) => f.name)
+      );
+      const fileExists = fileList?.some((f) => f.name === filename);
+      console.log("File exists in bucket:", fileExists);
+    }
 
     // Save invoice record to database
     const invoice = await prisma.invoice.create({
