@@ -66,6 +66,30 @@ export async function getCustomers() {
   }
 }
 
+// Function to get all customers (including those with pricing) for update mode
+export async function getAllCustomers() {
+  try {
+    const customers = await prisma.customer.findMany({
+      where: {
+        deleted_at: null,
+        status: "active",
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc", // Sort ascending A-Z
+      },
+    });
+    return customers;
+  } catch (error) {
+    console.error("Error fetching all customers:", error);
+    return [];
+  }
+}
+
 // Function to get all products for select options
 export async function getProducts() {
   try {
@@ -101,12 +125,12 @@ export async function postCustomProductPricing(
     const productItems = [];
     let index = 0;
 
-    while (formData.get(`product_items[${index}].product_id`)) {
+    while (formData.get(`pricing_items[${index}].product_id`)) {
       const productId = Number(
-        formData.get(`product_items[${index}].product_id`)
+        formData.get(`pricing_items[${index}].product_id`)
       );
       const customPrice = Number(
-        formData.get(`product_items[${index}].custom_price`)
+        formData.get(`pricing_items[${index}].custom_price`)
       );
 
       if (productId && customPrice >= 0) {
@@ -176,8 +200,8 @@ export async function updateCustomProductPricing(
   const validate = singleCustomProductPricingSchema.safeParse({
     code: formData.get("code"),
     customer_id: Number(formData.get("customer_id")),
-    product_id: Number(formData.get("product_items[0].product_id")),
-    custom_price: Number(formData.get("product_items[0].custom_price")),
+    product_id: Number(formData.get("pricing_items[0].product_id")),
+    custom_price: Number(formData.get("pricing_items[0].custom_price")),
   });
 
   // If the validation fails, return an error message
@@ -252,14 +276,14 @@ export async function updateCustomerPricing(
     const pricingItems = [];
     let index = 0;
 
-    while (formData.get(`product_items[${index}].product_id`)) {
+    while (formData.get(`pricing_items[${index}].product_id`)) {
       const productId = Number(
-        formData.get(`product_items[${index}].product_id`)
+        formData.get(`pricing_items[${index}].product_id`)
       );
       const customPrice = Number(
-        formData.get(`product_items[${index}].custom_price`)
+        formData.get(`pricing_items[${index}].custom_price`)
       );
-      const existingId = formData.get(`product_items[${index}].id`);
+      const existingId = formData.get(`pricing_items[${index}].id`);
 
       if (productId && customPrice >= 0) {
         pricingItems.push({

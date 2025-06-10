@@ -30,7 +30,7 @@ export async function postProduct(
   const validate = productSchema.safeParse({
     code: formData.get("code"),
     name: formData.get("name"),
-    default_price: Number(formData.get("default_price")),
+    default_price: Number(formData.get("default_price_numeric")),
     category_id: Number(formData.get("category_id")),
     status: formData.get("status"),
   });
@@ -84,7 +84,7 @@ export async function updateProduct(
   const validate = productSchema.safeParse({
     code: formData.get("code"),
     name: formData.get("name"),
-    default_price: Number(formData.get("default_price")),
+    default_price: Number(formData.get("default_price_numeric")),
     category_id: Number(formData.get("category_id")),
     status: formData.get("status"),
   });

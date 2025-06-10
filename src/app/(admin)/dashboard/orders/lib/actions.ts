@@ -122,6 +122,7 @@ async function generateInvoices(orderId: number) {
 interface OrderItemInput {
   product_id: number;
   quantity: number;
+  price: number;
 }
 
 // Function to create new order
@@ -146,11 +147,13 @@ export async function createOrder(
         formData.get(`order_items[${index}].product_id`)
       );
       const quantity = Number(formData.get(`order_items[${index}].quantity`));
+      const price = Number(formData.get(`order_items[${index}].price`));
 
-      if (productId > 0 && quantity > 0) {
+      if (productId > 0 && quantity > 0 && price >= 0) {
         orderItems.push({
           product_id: productId,
           quantity: quantity,
+          price: price,
         });
       }
       index++;
@@ -202,24 +205,14 @@ export async function createOrder(
         },
       });
 
-      // Create order items with custom pricing logic
-      const orderItemsData = await Promise.all(
-        orderItems.map(async (item, itemIndex) => {
-          // Get price for this customer and product
-          const priceAtTime = await getCustomerProductPrice(
-            customerId,
-            item.product_id
-          );
-
-          return {
-            code: `${orderCode}-ITEM-${itemIndex + 1}`,
-            order_id: order.id,
-            product_id: item.product_id,
-            quantity: item.quantity,
-            price_at_time: priceAtTime,
-          };
-        })
-      );
+      // Create order items using the prices sent from frontend
+      const orderItemsData = orderItems.map((item, itemIndex) => ({
+        code: `${orderCode}-ITEM-${itemIndex + 1}`,
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price_at_time: item.price,
+      }));
 
       // Create all order items
       await tx.orderItem.createMany({
