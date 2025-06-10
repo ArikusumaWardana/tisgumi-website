@@ -152,7 +152,7 @@ export default async function OrderDetailsPage({
           <div>
             <label className="text-sm font-medium text-gray-500">Phone</label>
             <p className="text-sm text-gray-900 dark:text-white mt-1">
-              {order.customer.phone}
+              +{order.customer.phone}
             </p>
           </div>
         </div>

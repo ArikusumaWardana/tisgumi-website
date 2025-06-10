@@ -8,13 +8,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
-import {
-  createOrder,
-  generateOrderCode,
-  getCustomerProductPrice,
-} from "../lib/actions";
-import { getCustomersForSelect } from "../../customers/lib/actions";
-import { getProductsForSelect } from "../../products/lib/actions";
+import { createOrder, getCustomerProductPrice } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
 import {
@@ -47,6 +41,7 @@ interface OrderItem {
   product_id: number;
   quantity: number;
   price: number; // calculated price (custom or default)
+  isCustomPrice: boolean;
 }
 
 // Submit button component
@@ -80,122 +75,66 @@ export default function FormOrder() {
   // Fetch customers, products, and generate order code on component mount
   useEffect(() => {
     const fetchData = async () => {
-      let attemptCount = 0;
-      const maxAttempts = 3;
+      try {
+        setLoadingProgress("Loading data via API...");
 
-      while (attemptCount < maxAttempts) {
-        try {
-          attemptCount++;
-          setLoadingProgress(
-            `Loading data (attempt ${attemptCount}/${maxAttempts})...`
-          );
+        // Use API routes directly to avoid Server Action issues
+        const [customersResponse, productsResponse, orderCodeResponse] =
+          await Promise.all([
+            fetch("/api/customers"),
+            fetch("/api/products"),
+            fetch("/api/orders/generate-code"),
+          ]);
 
-          // Try server actions first
-          const [customersData, productsData, newOrderCode] = await Promise.all(
-            [
-              getCustomersForSelect(),
-              getProductsForSelect(),
-              generateOrderCode(),
-            ]
-          );
-
-          setLoadingProgress("Validating data...");
-
-          // Validate that we got proper data
-          const isValidCustomers =
-            Array.isArray(customersData) && customersData.length > 0;
-          const isValidProducts =
-            Array.isArray(productsData) && productsData.length > 0;
-          const isValidOrderCode =
-            typeof newOrderCode === "string" && newOrderCode.length > 0;
-
-          if (isValidCustomers && isValidProducts && isValidOrderCode) {
-            setLoadingProgress("Setting up form...");
-            setCustomers(customersData);
-            setProducts(productsData);
-            setOrderCode(newOrderCode);
-            break; // Success, exit loop
-          } else {
-            throw new Error("Invalid data received from server actions");
-          }
-        } catch (error) {
-          console.error(
-            `Server actions failed (attempt ${attemptCount}):`,
-            error
-          );
-
-          // If this is not the last attempt, try fallback
-          if (attemptCount < maxAttempts) {
-            try {
-              setLoadingProgress("Trying backup method...");
-
-              const [customersResponse, productsResponse] = await Promise.all([
-                fetch("/api/customers"),
-                fetch("/api/products"),
-              ]);
-
-              if (!customersResponse.ok || !productsResponse.ok) {
-                throw new Error("API routes failed");
-              }
-
-              setLoadingProgress("Processing backup data...");
-
-              const [customersData, productsData] = await Promise.all([
-                customersResponse.json(),
-                productsResponse.json(),
-              ]);
-
-              // Validate API data
-              const isValidCustomers =
-                Array.isArray(customersData) && customersData.length > 0;
-              const isValidProducts =
-                Array.isArray(productsData) && productsData.length > 0;
-
-              if (isValidCustomers && isValidProducts) {
-                setLoadingProgress("Finalizing setup...");
-                setCustomers(customersData);
-                setProducts(productsData);
-
-                // Generate fallback order code
-                const fallbackCode = `ORD-${Date.now().toString().slice(-6)}`;
-                setOrderCode(fallbackCode);
-                setUsingFallback(true);
-
-                break; // Success, exit loop
-              } else {
-                throw new Error("Invalid data received from API routes");
-              }
-            } catch (fallbackError) {
-              console.error("API routes fallback also failed:", fallbackError);
-
-              // If this is the last attempt, set empty data
-              if (attemptCount === maxAttempts) {
-                setLoadingProgress("Loading failed, using minimal setup...");
-                console.warn("All loading attempts failed, using empty data");
-                setCustomers([]);
-                setProducts([]);
-                setOrderCode(`ORD-${Date.now().toString().slice(-6)}`);
-                setUsingFallback(true);
-              }
-            }
-          }
+        if (
+          !customersResponse.ok ||
+          !productsResponse.ok ||
+          !orderCodeResponse.ok
+        ) {
+          throw new Error("API requests failed");
         }
 
-        // Add delay between attempts
-        if (attemptCount < maxAttempts) {
-          setLoadingProgress(
-            `Retrying in 1 second (${attemptCount}/${maxAttempts})...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+        setLoadingProgress("Processing data...");
+
+        const [customersData, productsData, orderCodeData] = await Promise.all([
+          customersResponse.json(),
+          productsResponse.json(),
+          orderCodeResponse.json(),
+        ]);
+
+        // Validate API data
+        const isValidCustomers =
+          Array.isArray(customersData) && customersData.length >= 0;
+        const isValidProducts =
+          Array.isArray(productsData) && productsData.length >= 0;
+        const isValidOrderCode =
+          orderCodeData?.orderCode &&
+          typeof orderCodeData.orderCode === "string";
+
+        if (isValidCustomers && isValidProducts && isValidOrderCode) {
+          setLoadingProgress("Setting up form...");
+          setCustomers(customersData);
+          setProducts(productsData);
+          setOrderCode(orderCodeData.orderCode);
+        } else {
+          throw new Error("Invalid data structure from API");
         }
+      } catch (error) {
+        console.error("API loading failed:", error);
+
+        // Fallback to minimal setup
+        setLoadingProgress("Using fallback setup...");
+        setCustomers([]);
+        setProducts([]);
+        setOrderCode(`ORD-${Date.now().toString().slice(-6)}`);
+        setUsingFallback(true);
       }
 
       setIsLoading(false);
     };
 
-    // Start loading with initial delay
-    const timer = setTimeout(fetchData, 200);
-    return () => clearTimeout(timer);
+    // Start loading immediately
+    fetchData();
   }, []);
 
   // Show loading state - wait until ALL data is ready
@@ -262,139 +201,171 @@ export default function FormOrder() {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Total Amount Skeleton */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <div className="flex justify-between items-center">
-                <div className="h-5 bg-blue-200 dark:bg-blue-700 rounded animate-pulse w-24"></div>
-                <div className="h-6 bg-blue-200 dark:bg-blue-700 rounded animate-pulse w-32"></div>
-              </div>
-            </div>
+          {/* Action Buttons Skeleton */}
+          <div className="flex items-center justify-end gap-3">
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-20"></div>
+            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-32"></div>
           </div>
         </div>
 
-        {/* Action Buttons Skeleton */}
-        <div className="flex items-center justify-end gap-3">
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-20"></div>
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-28"></div>
-        </div>
-
-        {/* Loading Status */}
-        <div className="flex items-center justify-center py-4">
-          <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+        {/* Progress Indicator */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span className="text-sm">{loadingProgress}</span>
+            <span className="text-sm text-blue-600 dark:text-blue-400">
+              {loadingProgress}
+            </span>
           </div>
         </div>
       </div>
     );
   }
 
-  // Add new order item
   const addOrderItem = () => {
-    setOrderItems([...orderItems, { product_id: 0, quantity: 1, price: 0 }]);
+    setOrderItems([
+      ...orderItems,
+      { product_id: 0, quantity: 1, price: 0, isCustomPrice: false },
+    ]);
     setSelectedProducts([...selectedProducts, ""]);
   };
 
-  // Remove order item
   const removeOrderItem = (index: number) => {
     setOrderItems(orderItems.filter((_, i) => i !== index));
     setSelectedProducts(selectedProducts.filter((_, i) => i !== index));
   };
 
-  // Update order item
   const updateOrderItem = (
     index: number,
     field: keyof OrderItem,
     value: number
   ) => {
     const updatedItems = [...orderItems];
+    const currentItem = updatedItems[index] || {
+      product_id: 0,
+      quantity: 1,
+      price: 0,
+      isCustomPrice: false,
+    };
     updatedItems[index] = {
-      ...updatedItems[index],
+      ...currentItem,
       [field]: value,
-    } as OrderItem;
+    };
     setOrderItems(updatedItems);
   };
 
-  // Handle product selection and fetch custom pricing
   const handleProductSelect = async (index: number, productId: string) => {
     const productIdNum = parseInt(productId);
+    const selectedProduct = products.find((p) => p.id === productIdNum);
 
-    // Ensure products array exists before using find
-    const selectedProduct =
-      products && Array.isArray(products)
-        ? products.find((p) => p.id === productIdNum)
-        : null;
-
-    // Update selected products state
+    // Update selected products tracking
     const newSelectedProducts = [...selectedProducts];
     newSelectedProducts[index] = productId;
     setSelectedProducts(newSelectedProducts);
 
-    if (!selectedProduct || !selectedCustomer) {
-      updateOrderItem(index, "product_id", productIdNum);
-      return;
-    }
+    if (selectedProduct && selectedCustomer) {
+      // Get the appropriate price (custom or default) for this customer and product
+      let finalPrice = selectedProduct.default_price;
+      let isCustomPrice = false;
 
-    try {
-      // Get price for this customer and product using server action
-      const price = await getCustomerProductPrice(
-        parseInt(selectedCustomer),
-        productIdNum
-      );
+      try {
+        const customPrice = await getCustomerProductPrice(
+          parseInt(selectedCustomer),
+          productIdNum
+        );
+        if (customPrice && customPrice !== selectedProduct.default_price) {
+          finalPrice = customPrice;
+          isCustomPrice = true;
+        }
+      } catch (error) {
+        console.error("Error fetching customer product price:", error);
+        // Fallback to default price if there's an error
+        finalPrice = selectedProduct.default_price;
+      }
 
-      // Update the order item
       const updatedItems = [...orderItems];
+      const currentItem = updatedItems[index] || {
+        product_id: 0,
+        quantity: 1,
+        price: 0,
+        isCustomPrice: false,
+      };
       updatedItems[index] = {
-        ...updatedItems[index],
+        ...currentItem,
         product_id: productIdNum,
-        price: price,
-      } as OrderItem;
+        price: finalPrice,
+        isCustomPrice: isCustomPrice,
+      };
       setOrderItems(updatedItems);
-    } catch (error) {
-      console.error("Error fetching price:", error);
-      updateOrderItem(index, "product_id", productIdNum);
+    } else if (selectedProduct) {
+      // If no customer is selected yet, use default price
+      const updatedItems = [...orderItems];
+      const currentItem = updatedItems[index] || {
+        product_id: 0,
+        quantity: 1,
+        price: 0,
+        isCustomPrice: false,
+      };
+      updatedItems[index] = {
+        ...currentItem,
+        product_id: productIdNum,
+        price: selectedProduct.default_price || 0,
+        isCustomPrice: false,
+      };
+      setOrderItems(updatedItems);
     }
   };
 
-  // Handle customer selection - update prices for existing products
   const handleCustomerSelect = async (customerId: string) => {
     setSelectedCustomer(customerId);
 
-    // Update prices for all selected products when customer changes
-    if (
-      customerId &&
-      orderItems &&
-      Array.isArray(orderItems) &&
-      orderItems.some((item) => item.product_id > 0)
-    ) {
-      try {
-        const updatedItems = await Promise.all(
-          orderItems.map(async (item) => {
-            if (item.product_id > 0) {
-              try {
-                const price = await getCustomerProductPrice(
-                  parseInt(customerId),
-                  item.product_id
-                );
-                return { ...item, price };
-              } catch (error) {
-                console.error("Error fetching price:", error);
-                return item; // Return item without price update
+    // Update prices for already selected products when customer changes
+    if (customerId && orderItems.length > 0) {
+      const updatedItems = [...orderItems];
+
+      for (let i = 0; i < updatedItems.length; i++) {
+        const item = updatedItems[i];
+        if (item && item.product_id > 0) {
+          const selectedProduct = products.find(
+            (p) => p.id === item.product_id
+          );
+          if (selectedProduct) {
+            let finalPrice = selectedProduct.default_price;
+            let isCustomPrice = false;
+
+            try {
+              const customPrice = await getCustomerProductPrice(
+                parseInt(customerId),
+                item.product_id
+              );
+              if (
+                customPrice &&
+                customPrice !== selectedProduct.default_price
+              ) {
+                finalPrice = customPrice;
+                isCustomPrice = true;
               }
+
+              updatedItems[i] = {
+                ...item,
+                price: finalPrice,
+                isCustomPrice: isCustomPrice,
+              };
+            } catch (error) {
+              console.error("Error fetching customer product price:", error);
+              // Keep current price if there's an error
             }
-            return item;
-          })
-        );
-        setOrderItems(updatedItems);
-      } catch (error) {
-        console.error("Error updating prices:", error);
+          }
+        }
       }
+
+      setOrderItems(updatedItems);
     }
   };
 
   // Calculate total amount
-  const totalAmount = (orderItems || []).reduce(
+  const totalAmount = orderItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
@@ -635,9 +606,16 @@ export default function FormOrder() {
                     <div className="space-y-2">
                       <Label>Price per Item</Label>
                       <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded border">
-                        <span className="text-sm font-medium">
-                          Rp {item.price.toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            Rp {item.price.toLocaleString()}
+                          </span>
+                          {item.isCustomPrice && (
+                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                              Custom Price
+                            </span>
+                          )}
+                        </div>
                         {item.product_id > 0 && (
                           <p className="text-xs text-gray-500 mt-1">
                             Subtotal: Rp{" "}
@@ -645,6 +623,12 @@ export default function FormOrder() {
                           </p>
                         )}
                       </div>
+                      {/* Hidden input for price */}
+                      <input
+                        type="hidden"
+                        name={`order_items[${index}].price`}
+                        value={item.price}
+                      />
                     </div>
                   </div>
                 </div>
@@ -681,7 +665,9 @@ export default function FormOrder() {
       {/* Actions */}
       <div className="flex items-center justify-end gap-3">
         <Link href="/dashboard/orders">
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline" type="button">
+            Cancel
+          </Button>
         </Link>
         <SubmitButton />
       </div>

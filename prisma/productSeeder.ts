@@ -26,7 +26,7 @@ export async function productSeeder() {
                },
                {
                     code: "PRO-003",
-                    name: "Nasi Goreng Pedas",
+                    name: "Nasi Goreng Ambalabu",
                     default_price: 13000,
                     status: "active",
                     category_id: 1,

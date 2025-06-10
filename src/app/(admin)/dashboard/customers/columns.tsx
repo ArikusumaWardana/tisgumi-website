@@ -34,6 +34,10 @@ export const createCustomerColumns = (
   {
     header: "Phone",
     accessorKey: "phone",
+    cell: ({ row }) => {
+      const customer = row.original;
+      return `+${customer.phone}`;
+    },
   },
   {
     header: "Status",

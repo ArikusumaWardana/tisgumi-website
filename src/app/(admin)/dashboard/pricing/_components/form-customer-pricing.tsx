@@ -12,6 +12,7 @@ import {
   postCustomProductPricing,
   updateCustomerPricing,
   getCustomers,
+  getAllCustomers,
   getProducts,
   getPricingCount,
 } from "../lib/actions";
@@ -110,7 +111,7 @@ export default function FormCustomerPricing({
     }
   };
 
-  // Use form loading hook
+  // Use form loading hook with different dependencies based on mode
   const {
     isLoading,
     loadingProgress,
@@ -118,7 +119,10 @@ export default function FormCustomerPricing({
     data: loadedData,
     generatedCode,
   } = useFormLoading({
-    dependencies: [getCustomers, getProducts],
+    dependencies:
+      type === "create"
+        ? [getCustomers, getProducts]
+        : [getAllCustomers, getProducts],
     ...(type === "create" &&
       !pricingCode && { autoGenerateCode: generatePricingCode }),
     skipLoading: false, // Always load dependencies for pricing
@@ -139,7 +143,21 @@ export default function FormCustomerPricing({
   useEffect(() => {
     if (type === "update" && customerData && !isLoading) {
       setSelectedCustomer(customerData.id.toString());
-      setPricingCode(customerData.custom_prices[0]?.code?.split("-")[0] || "");
+
+      // Extract pricing code from the first custom price record
+      const firstPricing = customerData.custom_prices[0];
+      if (firstPricing && firstPricing.code) {
+        // Extract the base code (everything before the last dash and number)
+        const codeParts = firstPricing.code.split("-");
+        if (codeParts.length >= 2) {
+          // Remove the last part (which is the sequential number)
+          codeParts.pop();
+          const baseCode = codeParts.join("-");
+          setPricingCode(baseCode);
+        } else {
+          setPricingCode(firstPricing.code);
+        }
+      }
 
       // Map existing custom prices to pricing items
       const existingItems = customerData.custom_prices.map((pricing) => ({
@@ -155,7 +173,7 @@ export default function FormCustomerPricing({
           : [{ product_id: 0, custom_price: 0, formattedPrice: "" }]
       );
     }
-  }, [type, customerData, isLoading]);
+  }, [type, customerData, isLoading, products]);
 
   // State and form action for customer pricing
   const [state, formAction] = useActionState(
@@ -258,8 +276,21 @@ export default function FormCustomerPricing({
 
   return (
     <form action={formAction} className="space-y-6">
-      {/* Hidden field for customer_id */}
-      <input type="hidden" name="customer_id" value={selectedCustomer} />
+      {/* Hidden fields for update mode */}
+      {type === "update" && (
+        <>
+          <input
+            type="hidden"
+            name="customer_data_id"
+            value={selectedCustomer}
+          />
+          <input type="hidden" name="pricing_code" value={pricingCode} />
+        </>
+      )}
+      {/* Hidden field for create mode */}
+      {type === "create" && (
+        <input type="hidden" name="customer_id" value={selectedCustomer} />
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -281,15 +312,18 @@ export default function FormCustomerPricing({
             </Label>
             <Input
               id="code"
-              name="code"
+              name={type === "create" ? "code" : "display_code"}
               type="text"
               placeholder="e.g., PRC-001"
-              required
+              required={type === "create"}
               value={pricingCode}
               onChange={(e) => setPricingCode(e.target.value)}
+              disabled={type === "update"}
             />
             <p className="text-xs text-gray-500">
-              Unique identifier for the custom pricing
+              {type === "update"
+                ? "Pricing code cannot be changed for existing pricing"
+                : "Unique identifier for the custom pricing"}
             </p>
           </div>
 
@@ -299,7 +333,7 @@ export default function FormCustomerPricing({
               Customer <span className="text-red-600">*</span>
             </Label>
             <Select
-              name="customer_id"
+              name={type === "create" ? "customer_select" : "customer_display"}
               value={selectedCustomer}
               onValueChange={setSelectedCustomer}
               disabled={type === "update"}
@@ -307,18 +341,33 @@ export default function FormCustomerPricing({
               <SelectTrigger className="w-full">
                 <SelectValue
                   placeholder={
-                    customers.length === 0
+                    type === "update" && customerData
+                      ? customerData.name
+                      : customers.length === 0
                       ? "No customers available"
                       : "Select a customer"
                   }
                 />
               </SelectTrigger>
               <SelectContent className="w-full">
-                {customers.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.id.toString()}>
-                    {customer.name} ({customer.code})
-                  </SelectItem>
-                ))}
+                {type === "create"
+                  ? customers.map((customer) => (
+                      <SelectItem
+                        key={customer.id}
+                        value={customer.id.toString()}
+                      >
+                        {customer.name} ({customer.code})
+                      </SelectItem>
+                    ))
+                  : // For update mode, show all customers but highlight the selected one
+                    customers.map((customer) => (
+                      <SelectItem
+                        key={customer.id}
+                        value={customer.id.toString()}
+                      >
+                        {customer.name} ({customer.code})
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
             <p className="text-xs text-gray-500">
