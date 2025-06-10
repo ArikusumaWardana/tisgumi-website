@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
+import { WhatsAppActions } from "./_components/whatsapp-actions";
 
 // Define the order type based on what getOrdersPaginated returns
 type OrderWithDetails = {
@@ -130,15 +131,31 @@ export const columns: ColumnDef<OrderWithDetails>[] = [
     cell: ({ row }) => formatIndonesianDate(row.original.created_at),
   },
   {
+    header: "Chat Via WhatsApp",
+    accessorKey: "chat_via_whatsapp",
+    cell: ({ row }) => {
+      return (
+        <WhatsAppActions
+          orderId={row.original.id}
+          customerPhone={row.original.customer.phone}
+          customerName={row.original.customer.name}
+          orderCode={row.original.code}
+        />
+      );
+    },
+  },
+  {
     header: "Actions",
     accessorKey: "actions",
     cell: ({ row }) => {
       const order = row.original;
       return (
-        <ActionMenu
-          onView={`/dashboard/orders/${order.id}`}
-          onDelete={<FormDelete id={order.id} />}
-        />
+        <div className="flex items-center gap-2">
+          <ActionMenu
+            onView={`/dashboard/orders/${order.id}`}
+            onDelete={<FormDelete id={order.id} />}
+          />
+        </div>
       );
     },
   },
