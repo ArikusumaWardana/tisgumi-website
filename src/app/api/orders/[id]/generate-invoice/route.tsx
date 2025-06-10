@@ -9,6 +9,27 @@ import React from "react";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+// Custom domain configuration for professional URLs
+const CUSTOM_INVOICE_DOMAIN = process.env.CUSTOM_INVOICE_DOMAIN || null;
+
+// Function to create professional invoice URL
+function createProfessionalUrl(
+  _supabaseUrl: string,
+  filename: string,
+  request: NextRequest
+): string {
+  if (CUSTOM_INVOICE_DOMAIN) {
+    // Use custom domain: https://invoice.tisgumi.com/[filename]
+    return `https://${CUSTOM_INVOICE_DOMAIN}/${filename}`;
+  }
+
+  // Use internal proxy API for professional looking URLs
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+  return `${baseUrl}/api/invoice/${filename}`;
+}
+
 // Types
 type Tparams = {
   id: string;
@@ -97,10 +118,10 @@ export async function POST(request: NextRequest, { params }: Context) {
     console.log("PDF buffer generated, size:", pdfBuffer.length);
     console.log("Template used: InvoiceTemplate with Canvas logo design");
 
-    // Generate filename
+    // Generate professional filename
     const timestamp = new Date().toISOString().split("T")[0];
-    const priceType = showPrices ? "with-prices" : "without-prices";
-    const filename = `invoice-${order.code}-${priceType}-${timestamp}.pdf`;
+    // Use shorter, cleaner filename format
+    const filename = `tisgumi-invoice-${order.code}-${timestamp}.pdf`;
 
     console.log("Uploading to Supabase bucket 'invoices':", filename);
     console.log("PDF buffer size for upload:", pdfBuffer.length);
@@ -150,7 +171,15 @@ export async function POST(request: NextRequest, { params }: Context) {
       .from("invoices")
       .getPublicUrl(filename);
 
-    console.log("Public URL:", urlData.publicUrl);
+    console.log("Original Supabase URL:", urlData.publicUrl);
+
+    // Create professional URL
+    const professionalUrl = createProfessionalUrl(
+      urlData.publicUrl,
+      filename,
+      request
+    );
+    console.log("Professional URL:", professionalUrl);
 
     // Verify file exists by checking if we can list it
     const { data: fileList, error: listError } = await supabase.storage
@@ -168,11 +197,11 @@ export async function POST(request: NextRequest, { params }: Context) {
       console.log("File exists in bucket:", fileExists);
     }
 
-    // Save invoice record to database
+    // Save invoice record to database with professional URL
     const invoice = await prisma.invoice.create({
       data: {
         order_id: orderId,
-        file_url: urlData.publicUrl,
+        file_url: professionalUrl, // Use professional URL
         show_price: showPrices,
       },
     });
@@ -182,7 +211,8 @@ export async function POST(request: NextRequest, { params }: Context) {
     return NextResponse.json({
       success: true,
       invoice,
-      downloadUrl: urlData.publicUrl,
+      downloadUrl: professionalUrl, // Return professional URL
+      originalUrl: urlData.publicUrl, // Keep original for debugging
     });
   } catch (error) {
     console.error("PDF generation error:", error);
