@@ -78,6 +78,7 @@ export default function FormAdmin({
   // Use form loading hook
   const {
     isLoading,
+    loadingProgress,
     error: loadingError,
     generatedCode,
   } = useFormLoading({
@@ -171,6 +172,7 @@ export default function FormAdmin({
   if (isLoading) {
     return (
       <FormLoading
+        loadingProgress={loadingProgress}
         title="Preparing Admin Form"
         description="Generating unique admin code..."
       />
