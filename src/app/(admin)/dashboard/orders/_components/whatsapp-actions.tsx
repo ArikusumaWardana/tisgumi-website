@@ -25,7 +25,6 @@ export function WhatsAppActions({
   orderId,
   customerPhone,
   customerName,
-  orderCode,
 }: WhatsAppActionsProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -58,12 +57,11 @@ export function WhatsAppActions({
       if (data.success && data.downloadUrl) {
         // Create WhatsApp message
         const invoiceType = showPrice ? "with prices" : "without prices";
-        const recipient = showPrice ? customerName : "Warehouse";
+        const recipient = showPrice ? "Customer" : "Warehouse";
 
         const message = encodeURIComponent(
-          `Halo ${recipient}!\n\n` +
-            `Invoice untuk Order ${orderCode} telah siap.\n` +
-            `Tipe: Invoice ${showPrice ? "dengan harga" : "tanpa harga"}\n\n` +
+          `Halo *${recipient}*!\n\n` +
+            `Kami dari *Tisgumi* memberitahukan bahwa invoice untuk order atas nama *${customerName}* telah siap.\n\n` +
             `Silakan lihat invoice melalui link berikut:\n${data.downloadUrl}\n\n` +
             `Terima kasih!`
         );

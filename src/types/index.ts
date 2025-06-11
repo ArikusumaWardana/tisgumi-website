@@ -1,3 +1,4 @@
-export type ActionResult = {
-  error: string;
-};
+export interface ActionResult {
+  error?: string;
+  success?: boolean;
+}

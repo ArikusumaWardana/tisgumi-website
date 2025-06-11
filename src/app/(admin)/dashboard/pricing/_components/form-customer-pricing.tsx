@@ -4,10 +4,9 @@ import { AlertCircle, Save, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
-import { useActionState } from "react";
 import {
   postCustomProductPricing,
   updateCustomerPricing,
@@ -16,7 +15,6 @@ import {
   getProducts,
 } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useFormStatus } from "react-dom";
 import { Customer, CustomProductPricing, Product } from "@prisma/client";
 import {
   Select,
@@ -30,13 +28,6 @@ import {
   handlePriceInputChange,
   getNumericValue,
 } from "@/utils/currency";
-import { useFormLoading } from "@/hooks/use-form-loading";
-import FormLoading from "@/components/ui/form-loading";
-
-// Initial state for the form
-const initialState: ActionResult = {
-  error: "",
-};
 
 interface CustomerData extends Customer {
   custom_prices: (CustomProductPricing & {
@@ -60,10 +51,10 @@ interface ProductItem {
 }
 
 interface PricingItem {
-  id?: number; // For existing records
+  id?: number;
   product_id: number;
   custom_price: number;
-  formattedPrice: string; // For display
+  formattedPrice: string;
 }
 
 interface FormCustomerPricingProps {
@@ -71,21 +62,24 @@ interface FormCustomerPricingProps {
   customerData?: CustomerData | null;
 }
 
-// Submit button for the form
 function SubmitButton({
   validItemsCount,
   selectedCustomer,
+  isSubmitting,
 }: {
   validItemsCount: number;
   selectedCustomer: string;
+  isSubmitting: boolean;
 }) {
-  const { pending } = useFormStatus();
-  const isDisabled = pending || validItemsCount === 0 || !selectedCustomer;
+  const isDisabled = isSubmitting || validItemsCount === 0 || !selectedCustomer;
 
   return (
     <Button type="submit" disabled={isDisabled}>
-      <Save className="w-4 h-4 mr-1" />
-      {pending
+      {isSubmitting && (
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+      )}
+      {!isSubmitting && <Save className="w-4 h-4 mr-1" />}
+      {isSubmitting
         ? "Saving..."
         : !selectedCustomer
         ? "Select Customer First"
@@ -96,164 +90,216 @@ function SubmitButton({
   );
 }
 
-// Form component for customer pricing
 export default function FormCustomerPricing({
   type = "create",
   customerData = null,
 }: FormCustomerPricingProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [customers, setCustomers] = useState<CustomerItem[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const [pricingItems, setPricingItems] = useState<PricingItem[]>([
     { product_id: 0, custom_price: 0, formattedPrice: "" },
   ]);
 
-  // Use form loading hook with different dependencies based on mode
-  const {
-    isLoading,
-    loadingProgress,
-    error: loadingError,
-    data: loadedData,
-  } = useFormLoading({
-    dependencies:
-      type === "create"
-        ? [getCustomers, getProducts]
-        : [getAllCustomers, getProducts],
-    skipLoading: false, // Always load dependencies for pricing
-  });
-
-  // Extract customers and products from loaded data
-  const customers: CustomerItem[] = (loadedData[0] as CustomerItem[]) || [];
-  const productsData = loadedData[1];
-  const products: ProductItem[] = useMemo(
-    () => (productsData as ProductItem[]) || [],
-    [productsData]
-  );
-
-  // Initialize form data for update mode
+  // Load data on component mount
   useEffect(() => {
-    if (type === "update" && customerData && !isLoading) {
-      setSelectedCustomer(customerData.id.toString());
+    let isMounted = true;
 
-      // Map existing custom prices to pricing items
-      const existingItems = customerData.custom_prices.map((pricing) => ({
-        id: pricing.id,
-        product_id: pricing.product_id,
-        custom_price: pricing.custom_price,
-        formattedPrice: formatToRupiah(pricing.custom_price.toString()),
-      }));
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
 
-      setPricingItems(
-        existingItems.length > 0
-          ? existingItems
-          : [{ product_id: 0, custom_price: 0, formattedPrice: "" }]
-      );
-    }
-  }, [type, customerData, isLoading, products]);
+        const [customersData, productsData] = await Promise.all([
+          type === "create" ? getCustomers() : getAllCustomers(),
+          getProducts(),
+        ]);
 
-  // State and form action for customer pricing
-  const [state, formAction] = useActionState(
-    type === "create" ? postCustomProductPricing : updateCustomerPricing,
-    initialState
+        if (isMounted) {
+          setCustomers(customersData);
+          setProducts(productsData);
+
+          // Initialize data for update mode
+          if (type === "update" && customerData) {
+            setSelectedCustomer(customerData.id.toString());
+            const existingItems = customerData.custom_prices.map((pricing) => ({
+              id: pricing.id,
+              product_id: pricing.product_id,
+              custom_price: pricing.custom_price,
+              formattedPrice: formatToRupiah(pricing.custom_price.toString()),
+            }));
+
+            setPricingItems(
+              existingItems.length > 0
+                ? existingItems
+                : [{ product_id: 0, custom_price: 0, formattedPrice: "" }]
+            );
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Failed to load data");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [type, customerData]);
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (isSubmitting) {
+        return false;
+      }
+
+      try {
+        setIsSubmitting(true);
+        setError("");
+
+        const formData = new FormData(e.currentTarget);
+
+        let result: ActionResult;
+        if (type === "create") {
+          result = await postCustomProductPricing(null, formData);
+        } else {
+          result = await updateCustomerPricing(null, formData);
+        }
+
+        if (result.error) {
+          setError(result.error);
+          return false;
+        }
+
+        if (result.success) {
+          // Redirect after successful submission
+          window.location.href = "/dashboard/pricing";
+          return false;
+        }
+      } catch (err) {
+        console.error("Form submission error:", err);
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setIsSubmitting(false);
+      }
+
+      return false;
+    },
+    [type, isSubmitting]
   );
 
-  // Add new pricing item
-  const addPricingItem = () => {
-    setPricingItems([
-      ...pricingItems,
+  const addPricingItem = useCallback(() => {
+    setPricingItems((prev) => [
+      ...prev,
       { product_id: 0, custom_price: 0, formattedPrice: "" },
     ]);
-  };
+  }, []);
 
-  // Remove pricing item
-  const removePricingItem = (index: number) => {
-    if (pricingItems.length > 1) {
-      setPricingItems(pricingItems.filter((_, i) => i !== index));
-    }
-  };
+  const removePricingItem = useCallback((index: number) => {
+    setPricingItems((prev) =>
+      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev
+    );
+  }, []);
 
-  // Handle price input change with formatting
-  const handlePriceChange = (index: number, value: string) => {
+  const handlePriceChange = useCallback((index: number, value: string) => {
     const formatted = handlePriceInputChange(value);
     const numericValue = getNumericValue(formatted);
 
-    const updatedItems = [...pricingItems];
-    const currentItem = updatedItems[index];
-    if (currentItem) {
-      updatedItems[index] = {
-        ...currentItem,
-        formattedPrice: formatted,
-        custom_price: numericValue,
-      };
-      setPricingItems(updatedItems);
-    }
-  };
+    setPricingItems((prev) => {
+      const updatedItems = [...prev];
+      if (updatedItems[index]) {
+        updatedItems[index] = {
+          ...updatedItems[index],
+          formattedPrice: formatted,
+          custom_price: numericValue,
+        };
+      }
+      return updatedItems;
+    });
+  }, []);
 
-  // Set default price when product is selected
-  const handleProductSelect = (index: number, productId: string) => {
-    const productIdNum = parseInt(productId);
-    const selectedProduct = products.find((p) => p.id === productIdNum);
+  const handleProductSelect = useCallback(
+    (index: number, productId: string) => {
+      const productIdNum = parseInt(productId);
+      const selectedProduct = products.find((p) => p.id === productIdNum);
 
-    // Update the pricing item with new product_id
-    const updatedItems = [...pricingItems];
-    const currentItem = updatedItems[index];
-    if (currentItem) {
-      updatedItems[index] = {
-        ...currentItem,
-        product_id: productIdNum,
-        custom_price: selectedProduct?.default_price || 0,
-        formattedPrice: selectedProduct
-          ? formatToRupiah(selectedProduct.default_price.toString())
-          : "",
-      };
-      setPricingItems(updatedItems);
-    }
-  };
+      setPricingItems((prev) => {
+        const updatedItems = [...prev];
+        if (updatedItems[index]) {
+          updatedItems[index] = {
+            ...updatedItems[index],
+            product_id: productIdNum,
+            custom_price: selectedProduct?.default_price || 0,
+            formattedPrice: selectedProduct
+              ? formatToRupiah(selectedProduct.default_price.toString())
+              : "",
+          };
+        }
+        return updatedItems;
+      });
+    },
+    [products]
+  );
 
-  // Get available products for a specific index (excluding already selected products)
-  const getAvailableProducts = (currentIndex: number) => {
-    const selectedProductIds = pricingItems
-      .map((item, index) => (index !== currentIndex ? item.product_id : null))
-      .filter((id) => id !== null && id > 0);
+  const getAvailableProducts = useCallback(
+    (currentIndex: number) => {
+      const selectedProductIds = pricingItems
+        .map((item, index) => (index !== currentIndex ? item.product_id : null))
+        .filter((id): id is number => id !== null && id > 0);
 
-    return products.filter(
-      (product) => !selectedProductIds.includes(product.id)
-    );
-  };
+      return products.filter(
+        (product) => !selectedProductIds.includes(product.id)
+      );
+    },
+    [products, pricingItems]
+  );
 
-  // Filter valid pricing items (items with selected product and price >= 0)
-  const getValidPricingItems = () => {
-    return pricingItems.filter(
-      (item) => item.product_id > 0 && item.custom_price >= 0
-    );
-  };
+  const validPricingItems = useMemo(
+    () =>
+      pricingItems.filter(
+        (item) => item.product_id > 0 && item.custom_price >= 0
+      ),
+    [pricingItems]
+  );
 
-  const validPricingItems = getValidPricingItems();
   const emptyItemsCount = pricingItems.length - validPricingItems.length;
 
-  // Show loading state
   if (isLoading) {
     return (
-      <FormLoading
-        loadingProgress={loadingProgress}
-        title="Preparing Pricing Form"
-        description="Loading customers, products, and generating pricing code..."
-      />
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading form data...</p>
+        </div>
+      </div>
     );
   }
 
-  // Show loading error
-  if (loadingError) {
+  if (error && !customers.length && !products.length) {
     return (
       <div className="space-y-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{loadingError}</AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
     );
   }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" method="post" action="">
       {/* Hidden fields for update mode */}
       {type === "update" && (
         <input type="hidden" name="customer_data_id" value={selectedCustomer} />
@@ -291,10 +337,10 @@ export default function FormCustomerPricing({
           Customer Pricing Information
         </h2>
 
-        {state.error !== "" && (
+        {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{state.error}</AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
@@ -337,7 +383,7 @@ export default function FormCustomerPricing({
               name={type === "create" ? "customer_select" : "customer_display"}
               value={selectedCustomer}
               onValueChange={setSelectedCustomer}
-              disabled={type === "update"}
+              disabled={type === "update" || isSubmitting}
             >
               <SelectTrigger className="w-full">
                 <SelectValue
@@ -351,24 +397,11 @@ export default function FormCustomerPricing({
                 />
               </SelectTrigger>
               <SelectContent className="w-full">
-                {type === "create"
-                  ? customers.map((customer) => (
-                      <SelectItem
-                        key={customer.id}
-                        value={customer.id.toString()}
-                      >
-                        {customer.name} ({customer.code})
-                      </SelectItem>
-                    ))
-                  : // For update mode, show all customers but highlight the selected one
-                    customers.map((customer) => (
-                      <SelectItem
-                        key={customer.id}
-                        value={customer.id.toString()}
-                      >
-                        {customer.name} ({customer.code})
-                      </SelectItem>
-                    ))}
+                {customers.map((customer) => (
+                  <SelectItem key={customer.id} value={customer.id.toString()}>
+                    {customer.name} ({customer.code})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <p className="text-xs text-gray-500">
@@ -386,7 +419,12 @@ export default function FormCustomerPricing({
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
             Product Pricing
           </h3>
-          <Button type="button" onClick={addPricingItem} variant="outline">
+          <Button
+            type="button"
+            onClick={addPricingItem}
+            variant="outline"
+            disabled={isSubmitting}
+          >
             <Plus className="w-4 h-4 mr-1" />
             Add Product
           </Button>
@@ -408,6 +446,7 @@ export default function FormCustomerPricing({
                     onClick={() => removePricingItem(index)}
                     variant="outline"
                     size="sm"
+                    disabled={isSubmitting}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -421,8 +460,10 @@ export default function FormCustomerPricing({
                     Product <span className="text-red-600">*</span>
                   </Label>
                   <Select
-                    value={item.product_id.toString()}
+                    name={`product-${index}`}
+                    value={item.product_id ? item.product_id.toString() : ""}
                     onValueChange={(value) => handleProductSelect(index, value)}
+                    disabled={isSubmitting}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select product..." />
@@ -453,8 +494,8 @@ export default function FormCustomerPricing({
                     required
                     value={item.formattedPrice}
                     onChange={(e) => handlePriceChange(index, e.target.value)}
+                    disabled={isSubmitting}
                   />
-
                   <p className="text-xs text-gray-500">
                     Special price for this customer
                   </p>
@@ -468,11 +509,14 @@ export default function FormCustomerPricing({
       {/* Actions */}
       <div className="flex items-center justify-end gap-3">
         <Link href="/dashboard/pricing">
-          <Button variant="outline">Cancel</Button>
+          <Button variant="outline" type="button" disabled={isSubmitting}>
+            Cancel
+          </Button>
         </Link>
         <SubmitButton
           validItemsCount={validPricingItems.length}
           selectedCustomer={selectedCustomer}
+          isSubmitting={isSubmitting}
         />
       </div>
     </form>

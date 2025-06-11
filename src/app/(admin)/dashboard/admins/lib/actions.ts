@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 import bcrypt from "bcrypt";
 import { getUser } from "@/lib/auth";
+import { formatPhoneNumber } from "@/utils/phone";
 
 // Function to get total admin count for code generation
 export async function getAdminsCount(): Promise<number> {
@@ -54,8 +55,11 @@ export async function postAdmin(
   // Hash the password input
   const hashedPassword = await bcrypt.hash(validate.data.password, 12);
 
-  // Format phone number with +62 prefix
-  const formattedPhone = `+62${validate.data.phone}`;
+  // Format phone number
+  const formattedPhone = formatPhoneNumber(validate.data.phone);
+  if (!formattedPhone) {
+    return { error: "Invalid phone number format" };
+  }
 
   // Check if the admin already exists
   const existingAdmin = await prisma.user.findFirst({
@@ -125,8 +129,11 @@ export async function updateAdmin(
     return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
-  // Format phone number with +62 prefix
-  const formattedPhone = `+62${validate.data.phone}`;
+  // Format phone number
+  const formattedPhone = formatPhoneNumber(validate.data.phone);
+  if (!formattedPhone) {
+    return { error: "Invalid phone number format" };
+  }
 
   // If the id is undefined, return an error message
   if (id === undefined) {

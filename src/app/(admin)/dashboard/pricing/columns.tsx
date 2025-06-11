@@ -19,10 +19,6 @@ export const columns: ColumnDef<CustomerWithPricing>[] = [
   {
     header: "Phone",
     accessorKey: "phone",
-    cell: ({ row }) => {
-      const customer = row.original;
-      return `+${customer.phone}`;
-    },
   },
   {
     header: "Custom Products",

@@ -5,6 +5,12 @@ import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
 
+interface PricingItem {
+  id?: number | undefined;
+  product_id: number;
+  custom_price: number;
+}
+
 // Function to get count of pricing codes for auto-generation
 export async function getPricingCount() {
   try {
@@ -112,6 +118,45 @@ export async function getProducts() {
   }
 }
 
+// Function to generate unique pricing codes
+async function generateUniquePricingCodes(count: number): Promise<string[]> {
+  const codes: string[] = [];
+
+  // Find the highest existing PRC number
+  const lastPricingCode = await prisma.customProductPricing.findFirst({
+    where: {
+      code: {
+        startsWith: "PRC-",
+      },
+      deleted_at: null,
+    },
+    orderBy: {
+      code: "desc",
+    },
+    select: {
+      code: true,
+    },
+  });
+
+  let startNumber = 1;
+  if (lastPricingCode) {
+    // Extract number from code like "PRC-001" -> get the number after PRC-
+    const codeMatch = lastPricingCode.code.match(/^PRC-(\d+)$/);
+    if (codeMatch && codeMatch[1]) {
+      startNumber = parseInt(codeMatch[1]) + 1;
+    }
+  }
+
+  // Generate codes for the number of products
+  for (let i = 0; i < count; i++) {
+    const currentNumber = startNumber + i;
+    const formattedNumber = currentNumber.toString().padStart(3, "0");
+    codes.push(`PRC-${formattedNumber}`);
+  }
+
+  return codes;
+}
+
 // Function to create new custom product pricings (multiple items)
 export async function postCustomProductPricing(
   _: unknown,
@@ -119,7 +164,7 @@ export async function postCustomProductPricing(
 ): Promise<ActionResult> {
   try {
     // Parse product items from form data
-    const productItems = [];
+    const productItems: PricingItem[] = [];
     let index = 0;
 
     while (formData.get(`pricing_items[${index}].product_id`)) {
@@ -165,75 +210,69 @@ export async function postCustomProductPricing(
       };
     }
 
-    // Auto-generate unique pricing codes
-    const generateUniquePricingCodes = async (
-      count: number
-    ): Promise<string[]> => {
-      const codes = [];
+    // Check for duplicate products
+    const uniqueProductIds = new Set(
+      productItems.map((item) => item.product_id)
+    );
+    if (uniqueProductIds.size !== productItems.length) {
+      return { error: "Duplicate products are not allowed" };
+    }
 
-      // Find the highest existing PRC number
-      const lastPricingCode = await prisma.customProductPricing.findFirst({
-        where: {
-          code: {
-            startsWith: "PRC-",
-          },
-          deleted_at: null,
-        },
-        orderBy: {
-          code: "desc",
-        },
-        select: {
-          code: true,
-        },
-      });
+    // Check if customer already has pricing
+    const existingPricing = await prisma.customProductPricing.findFirst({
+      where: {
+        customer_id: customerId,
+        deleted_at: null,
+      },
+    });
 
-      let startNumber = 1;
-      if (lastPricingCode) {
-        // Extract number from code like "PRC-001" -> get the number after PRC-
-        const codeMatch = lastPricingCode.code.match(/^PRC-(\d+)$/);
-        if (codeMatch && codeMatch[1]) {
-          startNumber = parseInt(codeMatch[1]) + 1;
+    if (existingPricing) {
+      return { error: "Customer already has custom pricing" };
+    }
+
+    // Generate unique pricing codes
+    const codes = await generateUniquePricingCodes(productItems.length);
+
+    // Create all pricing items in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const createdItems = [];
+
+      for (let i = 0; i < productItems.length; i++) {
+        const item = productItems[i];
+        if (!item) continue;
+
+        const code = codes[i];
+        if (!code) {
+          throw new Error(`Failed to generate code for item ${i + 1}`);
         }
+
+        const created = await tx.customProductPricing.create({
+          data: {
+            code,
+            customer_id: customerId,
+            product_id: item.product_id,
+            custom_price: item.custom_price,
+          },
+        });
+
+        createdItems.push(created);
       }
 
-      // Generate codes for the number of products
-      for (let i = 0; i < count; i++) {
-        const currentNumber = startNumber + i;
-        const formattedNumber = currentNumber.toString().padStart(3, "0");
-        codes.push(`PRC-${formattedNumber}`);
-      }
+      return createdItems;
+    });
 
-      return codes;
-    };
+    if (result && result.length > 0) {
+      return { success: true };
+    }
 
-    // Generate unique codes for all products
-    const generatedCodes = await generateUniquePricingCodes(
-      productItems.length
-    );
-
-    // Create multiple custom product pricings with unique codes
-    const createPromises = productItems.map((item, index) =>
-      prisma.customProductPricing.create({
-        data: {
-          code:
-            generatedCodes[index] ||
-            `PRC-${(index + 1).toString().padStart(3, "0")}`, // Format: PRC-001, PRC-002, etc.
-          customer_id: customerId,
-          product_id: item.product_id,
-          custom_price: item.custom_price,
-        },
-      })
-    );
-
-    await Promise.all(createPromises);
+    return { error: "Failed to create pricing items" };
   } catch (error) {
-    console.log(error);
+    console.error("Error creating custom product pricing:", error);
     return {
-      error: "Failed to create custom product pricing",
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
-
-  return redirect("/dashboard/pricing?created=true");
 }
 
 // Function to update a custom product pricing
@@ -345,155 +384,149 @@ export async function deleteCustomerPricing(
   return redirect(`/dashboard/pricing?deleted=true`);
 }
 
-// Function to update customer pricing (multiple products)
+// Function to update existing custom product pricing
 export async function updateCustomerPricing(
   _: unknown,
   formData: FormData
 ): Promise<ActionResult> {
   try {
-    const customerId = Number(formData.get("customer_data_id"));
+    const customerDataId = Number(formData.get("customer_data_id"));
 
-    // Parse pricing items from form data
-    const pricingItems = [];
+    if (!customerDataId || customerDataId <= 0) {
+      return { error: "Invalid customer data" };
+    }
+
+    // Parse product items from form data
+    const productItems: PricingItem[] = [];
     let index = 0;
 
     while (formData.get(`pricing_items[${index}].product_id`)) {
+      const id = formData.get(`pricing_items[${index}].id`);
       const productId = Number(
         formData.get(`pricing_items[${index}].product_id`)
       );
       const customPrice = Number(
         formData.get(`pricing_items[${index}].custom_price`)
       );
-      const existingId = formData.get(`pricing_items[${index}].id`);
 
-      if (productId && customPrice >= 0) {
-        pricingItems.push({
-          id: existingId ? Number(existingId) : null,
+      if (
+        productId > 0 &&
+        customPrice >= 0 &&
+        !isNaN(productId) &&
+        !isNaN(customPrice)
+      ) {
+        const item: PricingItem = {
+          id: id ? Number(id) : undefined,
           product_id: productId,
           custom_price: customPrice,
-        });
+        };
+        productItems.push(item);
       }
       index++;
     }
 
-    if (pricingItems.length === 0) {
-      return { error: "At least one product item is required" };
+    if (productItems.length === 0) {
+      return {
+        error: "At least one valid product item is required",
+      };
     }
 
-    // Get existing pricing records for this customer
-    const existingPricings = await prisma.customProductPricing.findMany({
+    // Check for duplicate products
+    const uniqueProductIds = new Set(
+      productItems.map((item) => item.product_id)
+    );
+    if (uniqueProductIds.size !== productItems.length) {
+      return { error: "Duplicate products are not allowed" };
+    }
+
+    // Get existing pricing items
+    const existingItems = await prisma.customProductPricing.findMany({
       where: {
-        customer_id: customerId,
+        customer_id: customerDataId,
         deleted_at: null,
+      },
+      select: {
+        id: true,
+        product_id: true,
       },
     });
 
-    // Separate items into updates and creates
-    const updates = [];
-    const creates = [];
-    const existingIds = pricingItems
-      .filter((item) => item.id)
-      .map((item) => item.id);
+    // Update in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete items that are no longer in the form
+      const existingIds = existingItems.map((item) => item.id);
+      const updatedIds = productItems
+        .filter(
+          (item): item is PricingItem & { id: number } =>
+            typeof item.id === "number"
+        )
+        .map((item) => item.id);
 
-    // First, delete records that are not in the current form
-    const deletePromises = existingPricings
-      .filter((existing) => !existingIds.includes(existing.id))
-      .map((pricing) =>
-        prisma.customProductPricing.delete({
-          where: { id: pricing.id },
-        })
-      );
+      const idsToDelete = existingIds.filter((id) => !updatedIds.includes(id));
 
-    // Execute deletions first
-    await Promise.all(deletePromises);
-
-    // Auto-generate unique pricing codes for new items
-    const generateUniquePricingCodes = async (
-      count: number
-    ): Promise<string[]> => {
-      const codes = [];
-
-      // Find the highest existing PRC number
-      const lastPricingCode = await prisma.customProductPricing.findFirst({
-        where: {
-          code: {
-            startsWith: "PRC-",
+      if (idsToDelete.length > 0) {
+        await tx.customProductPricing.updateMany({
+          where: {
+            id: {
+              in: idsToDelete,
+            },
           },
-          deleted_at: null,
-        },
-        orderBy: {
-          code: "desc",
-        },
-        select: {
-          code: true,
-        },
-      });
+          data: {
+            deleted_at: new Date(),
+          },
+        });
+      }
 
-      let startNumber = 1;
-      if (lastPricingCode) {
-        // Extract number from code like "PRC-001" -> get the number after PRC-
-        const codeMatch = lastPricingCode.code.match(/^PRC-(\d+)$/);
-        if (codeMatch && codeMatch[1]) {
-          startNumber = parseInt(codeMatch[1]) + 1;
+      // Update existing items and create new ones
+      const updatedItems = [];
+
+      for (const item of productItems) {
+        if (item.id) {
+          // Update existing item
+          const updated = await tx.customProductPricing.update({
+            where: {
+              id: item.id,
+            },
+            data: {
+              product_id: item.product_id,
+              custom_price: item.custom_price,
+            },
+          });
+          updatedItems.push(updated);
+        } else {
+          // Create new item
+          const codes = await generateUniquePricingCodes(1);
+          const code = codes[0];
+
+          if (!code) {
+            throw new Error("Failed to generate code for new item");
+          }
+
+          const created = await tx.customProductPricing.create({
+            data: {
+              code,
+              customer_id: customerDataId,
+              product_id: item.product_id,
+              custom_price: item.custom_price,
+            },
+          });
+          updatedItems.push(created);
         }
       }
 
-      // Generate codes for the number of products
-      for (let i = 0; i < count; i++) {
-        const currentNumber = startNumber + i;
-        const formattedNumber = currentNumber.toString().padStart(3, "0");
-        codes.push(`PRC-${formattedNumber}`);
-      }
+      return updatedItems;
+    });
 
-      return codes;
-    };
-
-    // Count items that need new codes (items without id)
-    const newItemsCount = pricingItems.filter((item) => !item.id).length;
-    const generatedCodes =
-      newItemsCount > 0 ? await generateUniquePricingCodes(newItemsCount) : [];
-    let codeIndex = 0;
-
-    // Process each pricing item
-    for (const item of pricingItems) {
-      if (item.id) {
-        // Update existing record
-        updates.push(
-          prisma.customProductPricing.update({
-            where: { id: item.id },
-            data: {
-              product_id: item.product_id,
-              custom_price: item.custom_price,
-              updated_at: new Date(),
-            },
-          })
-        );
-      } else {
-        // Create new record with unique code
-        creates.push(
-          prisma.customProductPricing.create({
-            data: {
-              code:
-                generatedCodes[codeIndex] ||
-                `PRC-${(codeIndex + 1).toString().padStart(3, "0")}`, // Use generated code
-              customer_id: customerId,
-              product_id: item.product_id,
-              custom_price: item.custom_price,
-            },
-          })
-        );
-        codeIndex++;
-      }
+    if (result && result.length > 0) {
+      return { success: true };
     }
 
-    // Execute updates and creates
-    await Promise.all([...updates, ...creates]);
+    return { error: "Failed to update pricing items" };
   } catch (error) {
-    console.log(error);
+    console.error("Error updating custom product pricing:", error);
     return {
-      error: "Failed to update customer pricing",
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
     };
   }
-
-  return redirect("/dashboard/pricing?updated=true");
 }

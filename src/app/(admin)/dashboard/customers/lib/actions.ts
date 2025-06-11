@@ -4,6 +4,7 @@ import { customerSchema } from "@/lib/schema";
 import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
+import { formatPhoneNumber } from "@/utils/phone";
 
 // Function to get count of customers for auto-generation
 export async function getCustomersCount() {
@@ -39,8 +40,11 @@ export async function postCustomer(
     return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
-  // Format phone number with +62 prefix
-  const formattedPhone = `62${validate.data.phone}`;
+  // Format phone number
+  const formattedPhone = formatPhoneNumber(validate.data.phone);
+  if (!formattedPhone) {
+    return { error: "Invalid phone number format" };
+  }
 
   // Check if the customer already exists
   const existingCustomer = await prisma.customer.findFirst({
@@ -94,8 +98,11 @@ export async function updateCustomer(
     return { error: validate.error.errors[0]?.message ?? "Validation failed" };
   }
 
-  // Format phone number with +62 prefix
-  const formattedPhone = `62${validate.data.phone}`;
+  // Format phone number
+  const formattedPhone = formatPhoneNumber(validate.data.phone);
+  if (!formattedPhone) {
+    return { error: "Invalid phone number format" };
+  }
 
   // If the id is undefined, return an error message
   if (id === undefined) {
