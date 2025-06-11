@@ -8,6 +8,8 @@ import { getAdminsPaginated } from "./lib/data";
 import { getUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
+import { AdminSuccessAlert } from "./_components/success-alert";
 
 interface AdminsPageProps {
   searchParams: Promise<{
@@ -83,6 +85,11 @@ export default async function AdminsPage({ searchParams }: AdminsPageProps) {
 
   return (
     <div className="space-y-6">
+      {/* Success Alert */}
+      <Suspense fallback={null}>
+        <AdminSuccessAlert />
+      </Suspense>
+
       <PageHeader
         title="Admin Management"
         description="Manage your system admins"

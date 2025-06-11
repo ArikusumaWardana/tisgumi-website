@@ -90,8 +90,8 @@ export async function postAdmin(
     };
   }
 
-  // Redirect to the admins page
-  return redirect("/dashboard/admins");
+  // Redirect to the admins page with success parameter
+  return redirect("/dashboard/admins?created=true");
 }
 
 // Function to update a admin
@@ -135,8 +135,15 @@ export async function updateAdmin(
     };
   }
 
-  // Prepare update data 
-  const updateData: any = {
+  // Prepare update data
+  const updateData: {
+    code: string;
+    name: string;
+    email: string;
+    phone: string;
+    updated_at: Date;
+    password?: string;
+  } = {
     code: validate.data.code,
     name: validate.data.name,
     email: validate.data.email,
@@ -165,7 +172,7 @@ export async function updateAdmin(
     };
   }
 
-  return redirect("/dashboard/admins");
+  return redirect("/dashboard/admins?updated=true");
 }
 
 // Function to delete a admin
@@ -201,5 +208,5 @@ export async function deleteAdmin(
     };
   }
 
-  return redirect(`/dashboard/admins`);
+  return redirect("/dashboard/admins?deleted=true");
 }

@@ -23,36 +23,6 @@ interface GetAdminsResult {
   pagination: PaginationInfo;
 }
 
-// Function to get all admins (backward compatibility)
-export async function getAdmins() {
-  try {
-    // Check user role for access control
-    const { user } = await getUser();
-
-    // If user is not superadmin, return empty array
-    if (!user || user.role !== "superadmin") {
-      return [];
-    }
-
-    // Get all admins from the database
-    const admins = await prisma.user.findMany({
-      where: {
-        deleted_at: null,
-        role: Role.admin,
-      },
-      orderBy: {
-        created_at: "desc",
-      },
-    });
-    // Return the admins
-    return admins;
-  } catch (error) {
-    // If there is an error, return an empty array
-    console.error("Error fetching admins:", error);
-    return [];
-  }
-}
-
 // Function to get paginated admins
 export async function getAdminsPaginated({
   page = 1,
