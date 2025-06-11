@@ -37,12 +37,17 @@ interface OrderItem {
 }
 
 // Submit button component
-function SubmitButton() {
+function SubmitButton({ validItemsCount }: { validItemsCount: number }) {
   const { pending } = useFormStatus();
+  const isDisabled = pending || validItemsCount === 0;
 
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Creating..." : "Create Order"}
+    <Button type="submit" disabled={isDisabled}>
+      {pending
+        ? "Creating..."
+        : validItemsCount === 0
+        ? "Add Items First"
+        : "Create Order"}
     </Button>
   );
 }
@@ -320,8 +325,22 @@ export default function FormOrder() {
     }
   };
 
-  // Calculate total amount
-  const totalAmount = orderItems.reduce(
+  // Filter valid order items (items with selected product and quantity > 0)
+  const getValidOrderItems = () => {
+    return orderItems.filter(
+      (item, index) =>
+        item.product_id > 0 &&
+        item.quantity > 0 &&
+        selectedProducts[index] &&
+        selectedProducts[index] !== ""
+    );
+  };
+
+  const validOrderItems = getValidOrderItems();
+  const emptyItemsCount = orderItems.length - validOrderItems.length;
+
+  // Calculate total amount from valid items only
+  const totalAmount = validOrderItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
@@ -358,6 +377,27 @@ export default function FormOrder() {
       {/* Hidden field for payment status */}
       <input type="hidden" name="payment_status" value={paymentStatus} />
 
+      {/* Hidden fields for valid order items only */}
+      {validOrderItems.map((item, validIndex) => (
+        <div key={`valid-item-${validIndex}`}>
+          <input
+            type="hidden"
+            name={`order_items[${validIndex}].product_id`}
+            value={item.product_id}
+          />
+          <input
+            type="hidden"
+            name={`order_items[${validIndex}].quantity`}
+            value={item.quantity}
+          />
+          <input
+            type="hidden"
+            name={`order_items[${validIndex}].price`}
+            value={item.price}
+          />
+        </div>
+      ))}
+
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           Order Information
@@ -379,6 +419,21 @@ export default function FormOrder() {
             <AlertDescription>
               Using cached data to improve performance. Data may be up to 5
               minutes old.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {emptyItemsCount > 0 && (
+          <Alert
+            variant="default"
+            className="border-yellow-200 bg-yellow-50 text-yellow-800"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {emptyItemsCount} empty product item
+              {emptyItemsCount > 1 ? "s" : ""} will be ignored when creating the
+              order. Only {validOrderItems.length} valid item
+              {validOrderItems.length !== 1 ? "s" : ""} will be saved.
             </AlertDescription>
           </Alert>
         )}
@@ -503,7 +558,6 @@ export default function FormOrder() {
                       </Label>
                       <Select
                         key={`product-select-${index}-${item.product_id}`}
-                        name={`order_items[${index}].product_id`}
                         value={selectedProducts[index] || ""}
                         onValueChange={(value) =>
                           handleProductSelect(index, value)
@@ -542,7 +596,6 @@ export default function FormOrder() {
                       </Label>
                       <Input
                         id={`quantity-${index}`}
-                        name={`order_items[${index}].quantity`}
                         type="number"
                         min="1"
                         placeholder="1"
@@ -578,12 +631,6 @@ export default function FormOrder() {
                           </p>
                         )}
                       </div>
-                      {/* Hidden input for price */}
-                      <input
-                        type="hidden"
-                        name={`order_items[${index}].price`}
-                        value={item.price}
-                      />
                     </div>
                   </div>
                 </div>
@@ -624,7 +671,7 @@ export default function FormOrder() {
             Cancel
           </Button>
         </Link>
-        <SubmitButton />
+        <SubmitButton validItemsCount={validOrderItems.length} />
       </div>
     </form>
   );

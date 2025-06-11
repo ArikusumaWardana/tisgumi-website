@@ -208,11 +208,25 @@ export async function createOrder(
       const quantity = Number(formData.get(`order_items[${index}].quantity`));
       const price = Number(formData.get(`order_items[${index}].price`));
 
-      if (productId > 0 && quantity > 0 && price >= 0) {
+      // Enhanced validation: ensure all values are valid
+      if (
+        productId > 0 && // Product must be selected
+        quantity > 0 && // Quantity must be positive
+        price >= 0 && // Price must be non-negative
+        !isNaN(productId) && // Must be valid numbers
+        !isNaN(quantity) &&
+        !isNaN(price)
+      ) {
         orderItems.push({
           product_id: productId,
           quantity: quantity,
           price: price,
+        });
+      } else {
+        console.log(`Skipping invalid order item at index ${index}:`, {
+          productId,
+          quantity,
+          price,
         });
       }
       index++;
@@ -236,7 +250,10 @@ export async function createOrder(
     }
 
     if (orderItems.length === 0) {
-      return { error: "At least one product item is required" };
+      return {
+        error:
+          "At least one valid product item is required. Please select products and set quantities for all items.",
+      };
     }
 
     // Check if order code already exists
