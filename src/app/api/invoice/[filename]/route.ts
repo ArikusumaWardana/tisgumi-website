@@ -16,6 +16,17 @@ interface Context {
 
 export async function GET(_request: NextRequest, { params }: Context) {
   try {
+    // Check if Supabase is configured
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      return NextResponse.json(
+        { error: "Supabase configuration missing" },
+        { status: 503 }
+      );
+    }
+
     // Await params before using its properties
     const resolvedParams = await params;
     const { filename } = resolvedParams;
