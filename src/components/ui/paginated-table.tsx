@@ -10,9 +10,13 @@ import { usePagination } from "@/hooks/use-pagination";
 import { Input } from "@/components/ui/input";
 import { ColumnDef } from "@tanstack/react-table";
 
+type DataTableColumn<TData> = ColumnDef<TData, unknown> & {
+  accessorKey?: string;
+};
+
 interface PaginatedTableProps<TData> {
   data: TData[];
-  columns: ColumnDef<TData>[];
+  columns: DataTableColumn<TData>[];
   pagination: PaginationInfo;
   search: string;
   searchPlaceholder?: string;

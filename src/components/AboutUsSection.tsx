@@ -32,19 +32,19 @@ export default function AboutUsSection() {
       <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
         <div className="flex flex-col gap-3 md:gap-4 order-1 max-w-md mx-auto md:mx-0">
           <SubtitleWithLine className="text-sm text-white/70">
-            {aboutData[0].subtitle}
+            {aboutData[0]?.subtitle}
           </SubtitleWithLine>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
-            {aboutData[0].title}
+            {aboutData[0]?.title}
           </h2>
           <p className="text-sm sm:text-base text-white/80 font-poppins mb-4 leading-relaxed">
-            {aboutData[0].desc}
+            {aboutData[0]?.desc}
           </p>
         </div>
         <div className="order-2 w-full">
           <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
             <Image
-              src={aboutData[0].img}
+              src="/background.webp"
               alt="about us"
               fill
               className="object-cover"
@@ -60,7 +60,7 @@ export default function AboutUsSection() {
         <div className="order-2 md:order-1 w-full">
           <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
             <Image
-              src={aboutData[1].img}
+              src="/background.webp"
               alt="our menu"
               fill
               className="object-cover"
@@ -70,13 +70,13 @@ export default function AboutUsSection() {
         </div>
         <div className="flex flex-col gap-3 md:gap-4 order-1 md:order-2 max-w-md mx-auto md:mx-0 md:ms-auto">
           <SubtitleWithLine className="text-sm text-white/70">
-            {aboutData[1].subtitle}
+            {aboutData[1]?.subtitle}
           </SubtitleWithLine>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
-            {aboutData[1].title}
+            {aboutData[1]?.title}
           </h2>
           <p className="text-sm sm:text-base text-white/80 font-poppins mb-4 leading-relaxed">
-            {aboutData[1].desc}
+            {aboutData[1]?.desc}
           </p>
         </div>
       </div>
@@ -85,19 +85,19 @@ export default function AboutUsSection() {
       <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
         <div className="flex flex-col gap-3 md:gap-4 order-1 max-w-md mx-auto md:mx-0">
           <SubtitleWithLine className="text-sm text-white/70">
-            {aboutData[2].subtitle}
+            {aboutData[2]?.subtitle}
           </SubtitleWithLine>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-poppins mb-2">
-            {aboutData[2].title}
+            {aboutData[2]?.title}
           </h2>
           <p className="text-sm sm:text-base text-white/80 font-poppins mb-4 leading-relaxed">
-            {aboutData[2].desc}
+            {aboutData[2]?.desc}
           </p>
         </div>
         <div className="order-2 w-full">
           <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
             <Image
-              src={aboutData[2].img}
+              src="/background.webp"
               alt="our team"
               fill
               className="object-cover"
