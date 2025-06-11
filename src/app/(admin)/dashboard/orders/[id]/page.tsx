@@ -8,6 +8,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import { InvoiceActions } from "../_components/invoice-actions";
 import { PaymentStatusEditor } from "../_components/payment-status-editor";
+import { SuccessAlert } from "./_components/success-alert";
+import { Suspense } from "react";
 
 // Type for the params
 type Tparams = {
@@ -34,6 +36,11 @@ export default async function OrderDetailsPage({
   // Return the order details page
   return (
     <div className="space-y-6">
+      {/* Success Alert */}
+      <Suspense fallback={null}>
+        <SuccessAlert />
+      </Suspense>
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/dashboard/orders">

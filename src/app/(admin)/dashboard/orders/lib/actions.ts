@@ -310,8 +310,8 @@ export async function createOrder(
       // Don't fail the entire process, just log the error
     }
 
-    // After successful creation, redirect to order detail page
-    redirect(`/dashboard/orders/${result.id}`);
+    // After successful creation, redirect to order detail page with success parameter
+    redirect(`/dashboard/orders/${result.id}?created=true`);
   } catch (error) {
     // Check if this is a redirect error (which is normal behavior)
     if (error instanceof Error && error.message === "NEXT_REDIRECT") {
