@@ -1,6 +1,6 @@
 import React from "react";
 import { getProductById } from "../../lib/data";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import FormProduct from "../../_components/form-product";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,9 +39,9 @@ export default async function EditProductPage({
     getCategories(),
   ]);
 
-  // If the product is not found, redirect to the products page
+  // If the product is not found, show 404 page
   if (!data) {
-    return redirect("/dashboard/products");
+    notFound();
   }
 
   // Return the edit product page

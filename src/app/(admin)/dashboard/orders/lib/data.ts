@@ -246,9 +246,15 @@ export async function getOrdersPaginated({
 // Function to get order by id with full details (optimized)
 export async function getOrderById(id: string) {
   try {
+    // Validate that id is a valid integer
+    const numericId = Number.parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     const order = await prisma.order.findFirst({
       where: {
-        id: Number.parseInt(id),
+        id: numericId,
         deleted_at: null,
       },
       include: {

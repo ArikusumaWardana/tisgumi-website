@@ -1,6 +1,6 @@
 import React from "react";
 import { getCategoryById } from "../../lib/data";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import FormCategory from "../../_components/form-category";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,9 @@ export default async function EditCategoryPage({
   const resolvedParams = await params;
   const data = await getCategoryById(resolvedParams.id);
 
-  // If the category is not found, redirect to the categories page
+  // If the category is not found, show 404 page
   if (!data) {
-    return redirect("/dashboard/categories");
+    notFound();
   }
 
   // Return the edit category page

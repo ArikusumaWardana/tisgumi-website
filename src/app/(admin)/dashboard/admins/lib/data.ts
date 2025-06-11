@@ -110,10 +110,16 @@ export async function getAdminById(id: string) {
       return null;
     }
 
+    // Validate that id is a valid integer
+    const numericId = Number.parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     // Get the admin by id
     const admin = await prisma.user.findFirst({
       where: {
-        id: Number.parseInt(id),
+        id: numericId,
         deleted_at: null,
       },
     });

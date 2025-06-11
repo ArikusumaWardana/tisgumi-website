@@ -3,7 +3,7 @@ import {
   getCustomProductPricingById,
   getCustomerPricingDetails,
 } from "../../lib/data";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import FormCustomerPricing from "../../_components/form-customer-pricing";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export default async function EditCustomProductPricingPage({
   const pricingRecord = await getCustomProductPricingById(resolvedParams.id);
 
   if (!pricingRecord) {
-    return redirect("/dashboard/pricing");
+    notFound();
   }
 
   // Then get the full customer data with all pricing details
@@ -37,9 +37,9 @@ export default async function EditCustomProductPricingPage({
     pricingRecord.customer_id.toString()
   );
 
-  // If the customer data is not found, redirect to the custom product pricings page
+  // If the customer data is not found, show 404 page
   if (!data) {
-    return redirect("/dashboard/pricing");
+    notFound();
   }
 
   // Return the edit custom product pricing page

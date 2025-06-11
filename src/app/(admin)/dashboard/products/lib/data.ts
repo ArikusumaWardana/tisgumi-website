@@ -82,9 +82,15 @@ export async function getProductsPaginated({
 // Function to get single product by ID (optimized)
 export async function getProductById(id: string) {
   try {
+    // Validate that id is a valid integer
+    const numericId = Number.parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     const product = await prisma.product.findFirst({
       where: {
-        id: Number.parseInt(id),
+        id: numericId,
         deleted_at: null,
       },
       include: {

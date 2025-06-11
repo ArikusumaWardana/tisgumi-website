@@ -95,9 +95,15 @@ export async function getCategoriesPaginated({
 // Function to get single category by ID (optimized)
 export async function getCategoryById(id: string) {
   try {
+    // Validate that id is a valid integer
+    const numericId = Number.parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     const category = await prisma.categories.findFirst({
       where: {
-        id: Number.parseInt(id),
+        id: numericId,
         deleted_at: null,
       },
     });

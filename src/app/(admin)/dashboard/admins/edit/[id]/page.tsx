@@ -1,6 +1,6 @@
 import React from "react";
 import { getAdminById } from "../../lib/data";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import FormAdmin from "../../_components/form-admin";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,9 @@ export default async function EditAdminPage({ params }: EditAdminPageProps) {
   const resolvedParams = await params;
   const data = await getAdminById(resolvedParams.id);
 
-  // If the admin is not found, redirect to the admins page
+  // If the admin is not found, show 404 page
   if (!data) {
-    return redirect("/dashboard/admins");
+    notFound();
   }
 
   // Return the edit admin page

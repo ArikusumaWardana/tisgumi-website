@@ -75,9 +75,15 @@ export async function getCustomersPaginated({
 // Function to get single customer by ID (optimized)
 export async function getCustomerById(id: string) {
   try {
+    // Validate that id is a valid integer
+    const numericId = Number.parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     const customer = await prisma.customer.findFirst({
       where: {
-        id: Number.parseInt(id),
+        id: numericId,
         deleted_at: null,
       },
     });

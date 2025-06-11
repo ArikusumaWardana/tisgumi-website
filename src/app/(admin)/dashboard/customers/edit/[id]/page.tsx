@@ -1,6 +1,6 @@
 import React from "react";
 import { getCustomerById } from "../../lib/data";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import FormCustomer from "../../_components/form-customer";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,9 @@ export default async function EditCustomerPage({
   const resolvedParams = await params;
   const data = await getCustomerById(resolvedParams.id);
 
-  // If the customer is not found, redirect to the customers page
+  // If the customer is not found, show 404 page
   if (!data) {
-    return redirect("/dashboard/customers");
+    notFound();
   }
 
   // Return the edit customer page

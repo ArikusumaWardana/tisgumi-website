@@ -1,6 +1,6 @@
 import React from "react";
 import { getCustomerPricingDetails } from "../../lib/data";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft, Package, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -24,9 +24,9 @@ export default async function CustomerPricingDetailsPage({
   const resolvedParams = await params;
   const customer = await getCustomerPricingDetails(resolvedParams.id);
 
-  // If the customer is not found, redirect to the pricing page
+  // If the customer is not found, show 404 page
   if (!customer) {
-    return redirect("/dashboard/pricing");
+    notFound();
   }
 
   // Return the customer pricing details page
@@ -183,7 +183,7 @@ export default async function CustomerPricingDetailsPage({
                           : `-Rp ${(
                               pricing.product.default_price -
                               pricing.custom_price
-                            ).toLocaleString()}`} 
+                            ).toLocaleString()}`}
                       </p>
                     )}
                   </div>

@@ -96,10 +96,16 @@ export async function getCustomersWithPricingPaginated({
 // Function to get customer pricing details by customer id
 export async function getCustomerPricingDetails(customerId: string) {
   try {
+    // Validate that customerId is a valid integer
+    const numericId = Number.parseInt(customerId);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     // Get customer with all custom pricing details
     const customer = await prisma.customer.findFirst({
       where: {
-        id: Number.parseInt(customerId),
+        id: numericId,
         deleted_at: null,
       },
       include: {
@@ -132,10 +138,16 @@ export async function getCustomerPricingDetails(customerId: string) {
 // Function to get a custom product pricing by id
 export async function getCustomProductPricingById(id: string) {
   try {
+    // Validate that id is a valid integer
+    const numericId = Number.parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      return null;
+    }
+
     // Get the custom product pricing by id
     const customProductPricing = await prisma.customProductPricing.findFirst({
       where: {
-        id: Number.parseInt(id),
+        id: numericId,
         deleted_at: null,
       },
       include: {

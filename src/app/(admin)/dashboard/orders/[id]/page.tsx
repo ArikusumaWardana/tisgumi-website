@@ -1,6 +1,6 @@
 import React from "react";
 import { getOrderById } from "../lib/data";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft, Package, User, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -28,9 +28,9 @@ export default async function OrderDetailsPage({
   const resolvedParams = await params;
   const order = await getOrderById(resolvedParams.id);
 
-  // If the order is not found, redirect to the orders page
+  // If the order is not found, show 404 page
   if (!order) {
-    return redirect("/dashboard/orders");
+    notFound();
   }
 
   // Return the order details page
