@@ -84,6 +84,7 @@ export default function FormCustomer({
   // Use form loading hook
   const {
     isLoading,
+    loadingProgress,
     error: loadingError,
     generatedCode,
   } = useFormLoading({
@@ -139,6 +140,7 @@ export default function FormCustomer({
   if (isLoading) {
     return (
       <FormLoading
+        loadingProgress={loadingProgress}
         title="Preparing Customer Form"
         description="Generating unique customer code..."
       />
