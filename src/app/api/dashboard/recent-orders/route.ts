@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "../../../../../lib/prisma";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     // Get 4 most recent orders
     const orders = await prisma.order.findMany({

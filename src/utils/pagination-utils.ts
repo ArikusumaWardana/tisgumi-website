@@ -40,7 +40,7 @@ export function calculateSkip(page: number, limit: number): number {
 export function buildSearchWhere(
   search: string | undefined,
   searchFields: string[]
-): Record<string, any> {
+): Record<string, unknown> {
   if (!search) return {};
 
   const searchConditions = searchFields.map((field) => {
@@ -92,4 +92,3 @@ export function validatePaginationParams(params: PaginationParams) {
 
   return { page, limit, search };
 }
- 

@@ -4,7 +4,7 @@ import { AlertCircle, Save, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ActionResult } from "@/types";
 import { useActionState } from "react";
@@ -121,8 +121,12 @@ export default function FormCustomerPricing({
   });
 
   // Extract customers and products from loaded data
-  const customers: CustomerItem[] = loadedData[0] || [];
-  const products: ProductItem[] = loadedData[1] || [];
+  const customers: CustomerItem[] = (loadedData[0] as CustomerItem[]) || [];
+  const productsData = loadedData[1];
+  const products: ProductItem[] = useMemo(
+    () => (productsData as ProductItem[]) || [],
+    [productsData]
+  );
 
   // Initialize form data for update mode
   useEffect(() => {
@@ -459,7 +463,6 @@ export default function FormCustomerPricing({
             </div>
           ))}
         </div>
-
       </div>
 
       {/* Actions */}

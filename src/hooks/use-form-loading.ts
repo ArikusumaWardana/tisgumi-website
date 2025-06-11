@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 interface UseFormLoadingProps {
-  dependencies?: (() => Promise<any>)[];
+  dependencies?: (() => Promise<unknown>)[];
   autoGenerateCode?: () => Promise<string>;
   skipLoading?: boolean;
 }
@@ -14,7 +14,7 @@ export function useFormLoading({
   const [isLoading, setIsLoading] = useState(!skipLoading);
   const [loadingProgress, setLoadingProgress] = useState("Initializing...");
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<unknown[]>([]);
   const [generatedCode, setGeneratedCode] = useState<string>("");
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export function useFormLoading({
             `Initializing form (attempt ${attemptCount}/${maxAttempts})...`
           );
 
-          const loadingTasks: Promise<any>[] = [];
+          const loadingTasks: Promise<unknown>[] = [];
 
           // Step 2: Load dependencies
           if (dependencies.length > 0) {
@@ -118,7 +118,7 @@ export function useFormLoading({
     };
 
     loadFormData();
-  }, [skipLoading, dependencies.length, !!autoGenerateCode]);
+  }, [skipLoading, dependencies, autoGenerateCode]);
 
   return {
     isLoading,

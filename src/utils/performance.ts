@@ -2,7 +2,7 @@ export interface PerformanceMetrics {
   operation: string;
   duration: number;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 class PerformanceMonitor {
@@ -13,7 +13,7 @@ class PerformanceMonitor {
     this.timers.set(operation, performance.now());
   }
 
-  endTimer(operation: string, metadata?: Record<string, any>): number {
+  endTimer(operation: string, metadata?: Record<string, unknown>): number {
     const startTime = this.timers.get(operation);
     if (!startTime) {
       console.warn(`No timer found for operation: ${operation}`);
@@ -74,13 +74,13 @@ export const performanceMonitor = new PerformanceMonitor();
 // Decorator for async functions
 export function measurePerformance(operation: string) {
   return function (
-    _target: any,
+    _target: unknown,
     _propertyName: string,
     descriptor: PropertyDescriptor
   ) {
     const method = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       performanceMonitor.startTimer(operation);
       try {
         const result = await method.apply(this, args);
@@ -103,7 +103,7 @@ export function measurePerformance(operation: string) {
 export async function measureAsync<T>(
   operation: string,
   fn: () => Promise<T>,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): Promise<T> {
   performanceMonitor.startTimer(operation);
   try {
@@ -120,7 +120,7 @@ export async function measureAsync<T>(
 export function measureClientPerformance(
   operation: string,
   fn: () => void,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ): void {
   if (typeof window === "undefined") return;
 

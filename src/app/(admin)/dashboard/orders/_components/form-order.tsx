@@ -643,7 +643,8 @@ export default function FormOrder() {
                     No items added yet
                   </p>
                   <p className="text-sm text-gray-400 dark:text-gray-500">
-                    Click "Add Item" to start adding products to this order
+                    Click &quot;Add Item&quot; to start adding products to this
+                    order
                   </p>
                 </div>
               </div>

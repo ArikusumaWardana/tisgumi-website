@@ -67,7 +67,7 @@ export function PaymentStatusEditor({
         setIsOpen(false);
         router.refresh(); // Refresh the page to show updated data
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update payment status",

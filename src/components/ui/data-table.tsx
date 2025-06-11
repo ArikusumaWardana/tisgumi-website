@@ -10,10 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, HeaderContext, CellContext } from "@tanstack/react-table";
+
+type DataTableColumn<TData> = ColumnDef<TData, unknown> & {
+  accessorKey?: string;
+};
 
 interface DataTableProps<TData> {
-  columns: ColumnDef<TData>[];
+  columns: Array<DataTableColumn<TData>>;
   data: TData[];
   searchPlaceholder?: string;
   onSearch?: (value: string) => void;
@@ -46,30 +50,37 @@ export function DataTable<TData>({
       <Table>
         <TableHeader>
           <TableRow>
-            {columns.map((column: any, index: number) => (
-              <TableHead key={(column.accessorKey as string) || index}>
-                {column.header}
+            {columns.map((column, index: number) => (
+              <TableHead key={String(column.id || index)}>
+                {typeof column.header === "function"
+                  ? column.header({} as HeaderContext<TData, unknown>)
+                  : column.header}
               </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.length > 0 ? (
-            data.map((row: any, index: number) => (
-              <TableRow key={row.id || row.code || index}>
-                {columns.map((column: any, colIndex: number) => (
-                  <TableCell
-                    key={`${row.id || index}-${
-                      (column.accessorKey as string) || colIndex
-                    }`}
-                  >
-                    {column.cell
-                      ? column.cell({ row: { original: row } })
-                      : column.accessorKey
-                      ? row[column.accessorKey]
-                      : ""}
-                  </TableCell>
-                ))}
+            data.map((row, rowIndex: number) => (
+              <TableRow key={String(rowIndex)}>
+                {columns.map((column, colIndex: number) => {
+                  const value = column.accessorKey
+                    ? (row as Record<string, unknown>)[column.accessorKey]
+                    : undefined;
+
+                  return (
+                    <TableCell key={`${rowIndex}-${colIndex}`}>
+                      {typeof column.cell === "function"
+                        ? column.cell({ row: { original: row } } as CellContext<
+                            TData,
+                            unknown
+                          >)
+                        : value !== undefined
+                        ? String(value)
+                        : ""}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           ) : (

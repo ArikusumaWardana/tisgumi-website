@@ -5,25 +5,24 @@ import { ActionResult } from "@/types";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function Logout(_: unknown, formData: FormData): Promise<ActionResult> {
-     
-     const { session } = await getUser()
-     
-     if (!session) {
-          return {
-               error: 'Unauthorized'
-          }
-     }
+export async function Logout(): Promise<ActionResult> {
+  const { session } = await getUser();
 
-     await lucia.invalidateSession(session.id)
+  if (!session) {
+    return {
+      error: "Unauthorized",
+    };
+  }
 
-     const sessionCookie = lucia.createBlankSessionCookie()
+  await lucia.invalidateSession(session.id);
 
-          ; (await cookies()).set(
-          sessionCookie.name,
-          sessionCookie.value,
-          sessionCookie.attributes
-     )
+  const sessionCookie = lucia.createBlankSessionCookie();
 
-     redirect('/login')
+  (await cookies()).set(
+    sessionCookie.name,
+    sessionCookie.value,
+    sessionCookie.attributes
+  );
+
+  redirect("/login");
 }

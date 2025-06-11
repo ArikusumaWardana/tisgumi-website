@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
-
 interface Toast {
   title: string;
   description?: string;
   variant?: "default" | "destructive";
 }
 
-let toastRef: any = null;
+interface ToastRef {
+  toast: (toast: Toast) => void;
+}
+
+let toastRef: ToastRef | null = null;
 
 export function useToast() {
-  const [, _setToasts] = useState<Toast[]>([]);
-
   const toast = (toast: Toast) => {
     // Simple alert implementation for now
     // In a real application, you'd want to use a proper toast library

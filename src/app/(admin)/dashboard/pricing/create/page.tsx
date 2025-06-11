@@ -19,7 +19,7 @@ export default function CreatePricingPage() {
             Create New Custom Product Pricing
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Add custom pricing for a customer's products
+            Add custom pricing for a customer&apos;s products
           </p>
         </div>
       </div>

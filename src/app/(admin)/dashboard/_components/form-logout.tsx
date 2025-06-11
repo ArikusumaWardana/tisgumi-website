@@ -11,7 +11,7 @@ const intialState: ActionResult = {
 };
 
 export default function FormLogout() {
-  const [_state, formAction] = useActionState(Logout, intialState);
+  const [, formAction] = useActionState(Logout, intialState);
 
   return (
     <form action={formAction}>

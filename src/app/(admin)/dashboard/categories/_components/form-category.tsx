@@ -56,7 +56,7 @@ export default function FormCategory({
       const nextNumber = count + 1;
       const formattedNumber = nextNumber.toString().padStart(3, "0");
       return `CAT-${formattedNumber}`;
-    } catch (error) {
+    } catch {
       // Fallback jika terjadi error
       const timestamp = Date.now();
       const codeNumber = timestamp % 1000;

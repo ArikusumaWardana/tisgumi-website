@@ -80,7 +80,7 @@ export default function FormProduct({
       const nextNumber = count + 1;
       const formattedNumber = nextNumber.toString().padStart(3, "0");
       return `PRD-${formattedNumber}`;
-    } catch (error) {
+    } catch {
       // Fallback jika terjadi error
       const timestamp = Date.now();
       const codeNumber = timestamp % 1000;
@@ -104,8 +104,10 @@ export default function FormProduct({
   });
 
   // Determine which categories to use
-  const categories =
-    propCategories.length > 0 ? propCategories : loadedData[0] || [];
+  const categories: Category[] =
+    propCategories.length > 0
+      ? propCategories
+      : (loadedData[0] as Category[]) || [];
 
   // Set generated code when available
   useEffect(() => {

@@ -14,25 +14,22 @@ interface FormDeleteProps {
 }
 
 function SubmitButton() {
-     const { pending } = useFormStatus();
-     return (
-       <button
-         type="submit"
-         className="text-red-600 text-sm hover:bg-red-600 w-full hover:text-white px-2 py-1 rounded-sm text-left"
-       >
-         {pending ? "Deleting..." : "Delete"}
-       </button>
-     );
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      className="text-red-600 text-sm hover:bg-red-600 w-full hover:text-white px-2 py-1 rounded-sm text-left"
+    >
+      {pending ? "Deleting..." : "Delete"}
+    </button>
+  );
 }
 
 export default function FormDelete({ id }: FormDeleteProps) {
+  const deleteProductWithId = (_: unknown, formData: FormData) =>
+    deleteProduct(_, formData, id);
 
-     const deleteProductWithId = (
-       _: unknown,
-       formData: FormData
-     ) => deleteProduct(_, formData, id);
-
-    const [_state, formAction] = useActionState(deleteProductWithId, initialState);
+  const [, formAction] = useActionState(deleteProductWithId, initialState);
 
   return (
     <form action={formAction}>

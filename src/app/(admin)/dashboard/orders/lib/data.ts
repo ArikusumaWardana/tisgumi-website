@@ -1,6 +1,7 @@
 import prisma from "../../../../../../lib/prisma";
 import { PaginationInfo } from "@/components/ui/pagination";
 import { measureAsync } from "@/utils/performance";
+import { Prisma } from "@prisma/client";
 
 interface GetOrdersParams {
   page?: number;
@@ -92,7 +93,7 @@ export async function getOrdersPaginated({
         const skip = (page - 1) * limit;
 
         // Build where clause
-        const where: any = {
+        const where: Prisma.OrderWhereInput = {
           deleted_at: null,
           ...(search && {
             OR: [
