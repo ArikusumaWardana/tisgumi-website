@@ -35,7 +35,7 @@ enum OrderPaymentStatus {
 // Model for Users
 model User {
   id         Int       @id @default(autoincrement())
-  code       String    @unique @db.VarChar(50)
+  code       String    @db.VarChar(50)
   name       String    @db.VarChar(100)
   email      String    @unique @db.VarChar(100)
   phone      String    @db.VarChar(20)
@@ -70,7 +70,7 @@ model Session {
 // Model for Categories
 model Categories {
   id         Int       @id @default(autoincrement())
-  code       String    @unique @db.VarChar(50)
+  code       String    @db.VarChar(50)
   name       String    @db.VarChar(100)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -87,7 +87,7 @@ model Categories {
 // Model for Product
 model Product {
   id            Int       @id @default(autoincrement())
-  code          String    @unique @db.VarChar(50)
+  code          String    @db.VarChar(50)
   name          String    @db.VarChar(100)
   default_price Int       @default(0) @db.Integer
   status        Status    @default(active)
@@ -111,7 +111,7 @@ model Product {
 // Model for Customer
 model Customer {
   id         Int       @id @default(autoincrement())
-  code       String    @unique @db.VarChar(50)
+  code       String    @db.VarChar(50)
   name       String    @db.VarChar(100)
   phone      String    @db.VarChar(20)
   status     Status    @default(active)
@@ -135,7 +135,7 @@ model Customer {
 // Model for Orders
 model Order {
   id                 Int                @id @default(autoincrement())
-  code               String             @unique @db.VarChar(50)
+  code               String             @db.VarChar(50)
   customer_id        Int
   created_by_user_id Int
   status             OrderPaymentStatus @default(lunas)
@@ -180,7 +180,7 @@ model Invoice {
 // Model for OrderItem
 model OrderItem {
   id            Int       @id @default(autoincrement())
-  code          String    @unique @db.VarChar(50)
+  code          String    @db.VarChar(50)
   order_id      Int
   product_id    Int
   quantity      Int       @db.Integer
@@ -203,7 +203,7 @@ model OrderItem {
 // Model for CustomProductPricing
 model CustomProductPricing {
   id           Int       @id @default(autoincrement())
-  code         String    @unique @db.VarChar(50)
+  code         String    @db.VarChar(50)
   customer_id  Int
   product_id   Int
   custom_price Int       @db.Integer
