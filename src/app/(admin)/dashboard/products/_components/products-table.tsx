@@ -3,29 +3,10 @@
 import { DataTable } from "@/components/ui/data-table";
 import { createProductColumns } from "../columns";
 import { User } from "lucia";
-
-interface Product {
-  id: number;
-  code: string;
-  name: string;
-  default_price: number;
-  status: string;
-  category_id: number;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
-  category: {
-    id: number;
-    code: string;
-    name: string;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-  };
-}
+import { ProductWithCategory } from "../lib/types";
 
 interface ProductsTableProps {
-  data: Product[];
+  data: ProductWithCategory[];
   user: User | null;
 }
 

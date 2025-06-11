@@ -7,32 +7,12 @@ import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatToRupiah } from "@/utils/currency";
 import { User } from "lucia";
-
-// Type for product with category based on our data structure
-type Product = {
-  id: number;
-  code: string;
-  name: string;
-  default_price: number;
-  status: string;
-  category_id: number;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
-  category: {
-    id: number;
-    code: string;
-    name: string;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-  };
-};
+import { ProductWithCategory } from "./lib/types";
 
 // Function to create columns with user-aware ActionMenu
 export const createProductColumns = (
   user: User | null
-): ColumnDef<Product>[] => [
+): ColumnDef<ProductWithCategory>[] => [
   {
     header: "Code",
     accessorKey: "code",
@@ -87,6 +67,3 @@ export const createProductColumns = (
     },
   },
 ];
-
-// Export static columns for backward compatibility (without role restrictions)
-export const columns = createProductColumns(null);

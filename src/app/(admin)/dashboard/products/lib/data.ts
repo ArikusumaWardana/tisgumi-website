@@ -1,5 +1,6 @@
 import prisma from "../../../../../../lib/prisma";
 import { PaginationInfo } from "@/components/ui/pagination";
+import { ProductWithCategory } from "./types";
 
 interface GetProductsParams {
   page?: number;
@@ -8,49 +9,8 @@ interface GetProductsParams {
 }
 
 interface GetProductsResult {
-  data: Array<{
-    id: number;
-    code: string;
-    name: string;
-    default_price: number;
-    status: string;
-    category_id: number;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-    category: {
-      id: number;
-      code: string;
-      name: string;
-      created_at: Date;
-      updated_at: Date;
-      deleted_at: Date | null;
-    };
-  }>;
+  data: ProductWithCategory[];
   pagination: PaginationInfo;
-}
-
-// Function to get all products (backward compatibility)
-export async function getProducts() {
-  try {
-    // Get all products from the database
-    const products = await prisma.product.findMany({
-      where: {
-        deleted_at: null,
-      },
-      include: {
-        category: true,
-      },
-      orderBy: {
-        created_at: "desc",
-      },
-    });
-
-    return { data: products };
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return { data: [] };
-  }
 }
 
 // Function to get paginated products
