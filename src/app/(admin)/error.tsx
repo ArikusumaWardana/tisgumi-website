@@ -15,7 +15,12 @@ export default function AdminError({ error, reset }: AdminErrorProps) {
     console.error("Admin Dashboard Error:", error);
   }, [error]);
 
-  const getErrorInfo = () => {
+  const getErrorInfo = (): {
+    code: string;
+    title: string;
+    description: string;
+    color: "red" | "orange" | "yellow" | "purple";
+  } => {
     const message = error?.message?.toLowerCase() || "";
 
     if (message.includes("500") || message.includes("internal")) {
@@ -93,19 +98,7 @@ export default function AdminError({ error, reset }: AdminErrorProps) {
               }`}
             >
               {errorInfo.color === "purple" ? (
-                <Shield
-                  className={`w-8 h-8 ${
-                    errorInfo.color === "red"
-                      ? "text-red-600 dark:text-red-400"
-                      : errorInfo.color === "orange"
-                      ? "text-orange-600 dark:text-orange-400"
-                      : errorInfo.color === "yellow"
-                      ? "text-yellow-600 dark:text-yellow-400"
-                      : errorInfo.color === "purple"
-                      ? "text-purple-600 dark:text-purple-400"
-                      : "text-red-600 dark:text-red-400"
-                  }`}
-                />
+                <Shield className="w-8 h-8 text-purple-600 dark:text-purple-400" />
               ) : (
                 <AlertTriangle
                   className={`w-8 h-8 ${
@@ -115,8 +108,6 @@ export default function AdminError({ error, reset }: AdminErrorProps) {
                       ? "text-orange-600 dark:text-orange-400"
                       : errorInfo.color === "yellow"
                       ? "text-yellow-600 dark:text-yellow-400"
-                      : errorInfo.color === "purple"
-                      ? "text-purple-600 dark:text-purple-400"
                       : "text-red-600 dark:text-red-400"
                   }`}
                 />
