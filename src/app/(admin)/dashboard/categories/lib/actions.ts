@@ -65,8 +65,8 @@ export async function postCategory(
     };
   }
 
-  // Redirect to the categories page
-  return redirect("/dashboard/categories");
+  // Redirect to the categories page with success parameter
+  return redirect("/dashboard/categories?created=true");
 }
 
 // Function to update a category
@@ -111,13 +111,13 @@ export async function updateCategory(
     };
   }
 
-  return redirect("/dashboard/categories");
+  return redirect("/dashboard/categories?updated=true");
 }
 
 // Function to delete a category
 export async function deleteCategory(
   _: unknown,
-  formData: FormData,
+  _formData: FormData,
   id: number
 ): Promise<ActionResult> {
   // Try to delete the category
@@ -137,5 +137,5 @@ export async function deleteCategory(
     };
   }
 
-  return redirect(`/dashboard/categories`);
+  return redirect(`/dashboard/categories?deleted=true`);
 }

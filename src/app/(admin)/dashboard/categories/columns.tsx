@@ -1,16 +1,16 @@
 "use client";
 
 import { ActionMenu } from "@/components/ui/action-menu";
-import { Categories } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { User } from "lucia";
+import { Category } from "./lib/types";
 
 // Function to create columns with user-aware ActionMenu
 export const createCategoryColumns = (
   user: User | null
-): ColumnDef<Categories>[] => [
+): ColumnDef<Category>[] => [
   {
     header: "Code",
     accessorKey: "code",
@@ -41,6 +41,3 @@ export const createCategoryColumns = (
     },
   },
 ];
-
-// Export static columns for backward compatibility (without role restrictions)
-export const columns = createCategoryColumns(null);

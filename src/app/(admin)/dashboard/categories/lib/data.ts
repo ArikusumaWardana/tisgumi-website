@@ -1,5 +1,6 @@
 import prisma from "../../../../../../lib/prisma";
 import { PaginationInfo } from "@/components/ui/pagination";
+import { Category } from "./types";
 
 interface GetCategoriesParams {
   page?: number;
@@ -8,14 +9,7 @@ interface GetCategoriesParams {
 }
 
 interface GetCategoriesResult {
-  data: Array<{
-    id: number;
-    code: string;
-    name: string;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-  }>;
+  data: Category[];
   pagination: PaginationInfo;
 }
 

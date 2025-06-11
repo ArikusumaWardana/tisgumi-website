@@ -5,7 +5,9 @@ import { SearchForm } from "@/components/ui/search-form";
 import { getProductsPaginated } from "./lib/data";
 import { getUser } from "@/lib/auth";
 import { ProductsTable } from "./_components/products-table";
+import { ProductSuccessAlert } from "./_components/success-alert";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -90,6 +92,11 @@ export default async function ProductsPage({
           module: "products",
         }}
       />
+
+      {/* Success Alert */}
+      <Suspense>
+        <ProductSuccessAlert />
+      </Suspense>
 
       <div className="space-y-4">
         {/* Search bar with button and loading */}

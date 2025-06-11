@@ -5,7 +5,9 @@ import { SearchForm } from "@/components/ui/search-form";
 import { getCategoriesPaginated } from "./lib/data";
 import { getUser } from "@/lib/auth";
 import { CategoriesTable } from "./_components/categories-table";
+import { CategorySuccessAlert } from "./_components/success-alert";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface CategoriesPageProps {
   searchParams: Promise<{
@@ -90,6 +92,11 @@ export default async function CategoriesPage({
           module: "categories",
         }}
       />
+
+      {/* Success Alert */}
+      <Suspense>
+        <CategorySuccessAlert />
+      </Suspense>
 
       <div className="space-y-4">
         {/* Search bar with button and loading */}

@@ -135,7 +135,7 @@ export async function updateAdmin(
     };
   }
 
-  // Prepare update data
+  // Prepare update data 
   const updateData: any = {
     code: validate.data.code,
     name: validate.data.name,

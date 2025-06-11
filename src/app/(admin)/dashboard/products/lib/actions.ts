@@ -71,8 +71,8 @@ export async function postProduct(
     };
   }
 
-  // Redirect to the products page
-  return redirect("/dashboard/products");
+  // Redirect to the products page with success parameter
+  return redirect("/dashboard/products?created=true");
 }
 
 // Function to update a product
@@ -123,7 +123,7 @@ export async function updateProduct(
     };
   }
 
-  return redirect("/dashboard/products");
+  return redirect("/dashboard/products?updated=true");
 }
 
 // Function to delete a product
@@ -149,5 +149,5 @@ export async function deleteProduct(
     };
   }
 
-  return redirect(`/dashboard/products`);
+  return redirect(`/dashboard/products?deleted=true`);
 }
