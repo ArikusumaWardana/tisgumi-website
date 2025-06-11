@@ -1,5 +1,6 @@
 import prisma from "../../../../../../lib/prisma";
 import { PaginationInfo } from "@/components/ui/pagination";
+import { Customer } from "./types";
 
 interface GetCustomersParams {
   page?: number;
@@ -8,38 +9,8 @@ interface GetCustomersParams {
 }
 
 interface GetCustomersResult {
-  data: Array<{
-    id: number;
-    code: string;
-    name: string;
-    phone: string;
-    status: string;
-    created_at: Date;
-    updated_at: Date;
-    deleted_at: Date | null;
-  }>;
+  data: Customer[];
   pagination: PaginationInfo;
-}
-
-// Function to get all customers (backward compatibility)
-export async function getCustomers() {
-  try {
-    // Get all customers from the database
-    const customers = await prisma.customer.findMany({
-      where: {
-        deleted_at: null,
-      },
-      orderBy: {
-        created_at: "desc",
-      },
-    });
-    // Return the customers
-    return customers;
-  } catch (error) {
-    // If there is an error, return an empty array
-    console.error("Error fetching customers:", error);
-    return [];
-  }
 }
 
 // Function to get paginated customers

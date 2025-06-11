@@ -5,7 +5,9 @@ import { SearchForm } from "@/components/ui/search-form";
 import { getCustomersPaginated } from "./lib/data";
 import { getUser } from "@/lib/auth";
 import { CustomersTable } from "./_components/customers-table";
+import { CustomerSuccessAlert } from "./_components/success-alert";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface CustomersPageProps {
   searchParams: Promise<{
@@ -90,6 +92,11 @@ export default async function CustomersPage({
           module: "customers",
         }}
       />
+
+      {/* Success Alert */}
+      <Suspense>
+        <CustomerSuccessAlert />
+      </Suspense>
 
       <div className="space-y-4">
         {/* Search bar with button and loading */}

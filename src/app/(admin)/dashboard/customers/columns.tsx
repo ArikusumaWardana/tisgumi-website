@@ -6,23 +6,12 @@ import { formatIndonesianDate } from "@/utils/date-utils";
 import FormDelete from "./_components/form-delete";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { User } from "lucia";
-
-// Type that matches the actual data structure from getCustomersPaginated
-type CustomerData = {
-  id: number;
-  code: string;
-  name: string;
-  phone: string;
-  status: string;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
-};
+import { Customer } from "./lib/types";
 
 // Function to create columns with user-aware ActionMenu
 export const createCustomerColumns = (
   user: User | null
-): ColumnDef<CustomerData>[] => [
+): ColumnDef<Customer>[] => [
   {
     header: "Code",
     accessorKey: "code",
@@ -70,6 +59,3 @@ export const createCustomerColumns = (
     },
   },
 ];
-
-// Export static columns for backward compatibility (without role restrictions)
-export const columns = createCustomerColumns(null);

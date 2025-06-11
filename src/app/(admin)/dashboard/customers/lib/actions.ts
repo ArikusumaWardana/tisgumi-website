@@ -72,8 +72,8 @@ export async function postCustomer(
     };
   }
 
-  // Redirect to the customers page
-  return redirect("/dashboard/customers");
+  // Redirect to the customers page with success parameter
+  return redirect("/dashboard/customers?created=true");
 }
 
 // Function to update a customer
@@ -125,7 +125,7 @@ export async function updateCustomer(
     };
   }
 
-  return redirect("/dashboard/customers");
+  return redirect("/dashboard/customers?updated=true");
 }
 
 // Function to delete a customer
@@ -151,29 +151,5 @@ export async function deleteCustomer(
     };
   }
 
-  return redirect(`/dashboard/customers`);
-}
-
-// Function to get all customers for select options
-export async function getCustomersForSelect() {
-  try {
-    const customers = await prisma.customer.findMany({
-      where: {
-        deleted_at: null,
-        status: "active",
-      },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-    return customers;
-  } catch (error) {
-    console.error("Error fetching customers:", error);
-    return [];
-  }
+  return redirect(`/dashboard/customers?deleted=true`);
 }
