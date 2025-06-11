@@ -14,7 +14,6 @@ import {
   getCustomers,
   getAllCustomers,
   getProducts,
-  getPricingCount,
 } from "../lib/actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useFormStatus } from "react-dom";
@@ -73,12 +72,26 @@ interface FormCustomerPricingProps {
 }
 
 // Submit button for the form
-function SubmitButton() {
+function SubmitButton({
+  validItemsCount,
+  selectedCustomer,
+}: {
+  validItemsCount: number;
+  selectedCustomer: string;
+}) {
   const { pending } = useFormStatus();
+  const isDisabled = pending || validItemsCount === 0 || !selectedCustomer;
+
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={isDisabled}>
       <Save className="w-4 h-4 mr-1" />
-      {pending ? "Saving..." : "Save Customer Pricing"}
+      {pending
+        ? "Saving..."
+        : !selectedCustomer
+        ? "Select Customer First"
+        : validItemsCount === 0
+        ? "Add Products First"
+        : "Save Customer Pricing"}
     </Button>
   );
 }
@@ -89,27 +102,9 @@ export default function FormCustomerPricing({
   customerData = null,
 }: FormCustomerPricingProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
-  const [pricingCode, setPricingCode] = useState<string>("");
   const [pricingItems, setPricingItems] = useState<PricingItem[]>([
     { product_id: 0, custom_price: 0, formattedPrice: "" },
   ]);
-
-  // Generate pricing code function
-  const generatePricingCode = async (): Promise<string> => {
-    try {
-      // Fetch count from actions
-      const count = await getPricingCount();
-      const nextNumber = count + 1;
-      const formattedNumber = nextNumber.toString().padStart(3, "0");
-      return `PRC-${formattedNumber}`;
-    } catch (error) {
-      // Fallback jika terjadi error
-      const timestamp = Date.now();
-      const codeNumber = timestamp % 1000;
-      const formattedNumber = codeNumber.toString().padStart(3, "0");
-      return `PRC-${formattedNumber}`;
-    }
-  };
 
   // Use form loading hook with different dependencies based on mode
   const {
@@ -117,14 +112,11 @@ export default function FormCustomerPricing({
     loadingProgress,
     error: loadingError,
     data: loadedData,
-    generatedCode,
   } = useFormLoading({
     dependencies:
       type === "create"
         ? [getCustomers, getProducts]
         : [getAllCustomers, getProducts],
-    ...(type === "create" &&
-      !pricingCode && { autoGenerateCode: generatePricingCode }),
     skipLoading: false, // Always load dependencies for pricing
   });
 
@@ -132,32 +124,10 @@ export default function FormCustomerPricing({
   const customers: CustomerItem[] = loadedData[0] || [];
   const products: ProductItem[] = loadedData[1] || [];
 
-  // Set generated code when available
-  useEffect(() => {
-    if (generatedCode && type === "create" && !pricingCode) {
-      setPricingCode(generatedCode);
-    }
-  }, [generatedCode, type, pricingCode]);
-
   // Initialize form data for update mode
   useEffect(() => {
     if (type === "update" && customerData && !isLoading) {
       setSelectedCustomer(customerData.id.toString());
-
-      // Extract pricing code from the first custom price record
-      const firstPricing = customerData.custom_prices[0];
-      if (firstPricing && firstPricing.code) {
-        // Extract the base code (everything before the last dash and number)
-        const codeParts = firstPricing.code.split("-");
-        if (codeParts.length >= 2) {
-          // Remove the last part (which is the sequential number)
-          codeParts.pop();
-          const baseCode = codeParts.join("-");
-          setPricingCode(baseCode);
-        } else {
-          setPricingCode(firstPricing.code);
-        }
-      }
 
       // Map existing custom prices to pricing items
       const existingItems = customerData.custom_prices.map((pricing) => ({
@@ -245,11 +215,15 @@ export default function FormCustomerPricing({
     );
   };
 
-  // Calculate total for all pricing items
-  const totalAmount = pricingItems.reduce(
-    (sum, item) => sum + item.custom_price,
-    0
-  );
+  // Filter valid pricing items (items with selected product and price >= 0)
+  const getValidPricingItems = () => {
+    return pricingItems.filter(
+      (item) => item.product_id > 0 && item.custom_price >= 0
+    );
+  };
+
+  const validPricingItems = getValidPricingItems();
+  const emptyItemsCount = pricingItems.length - validPricingItems.length;
 
   // Show loading state
   if (isLoading) {
@@ -278,19 +252,35 @@ export default function FormCustomerPricing({
     <form action={formAction} className="space-y-6">
       {/* Hidden fields for update mode */}
       {type === "update" && (
-        <>
-          <input
-            type="hidden"
-            name="customer_data_id"
-            value={selectedCustomer}
-          />
-          <input type="hidden" name="pricing_code" value={pricingCode} />
-        </>
+        <input type="hidden" name="customer_data_id" value={selectedCustomer} />
       )}
       {/* Hidden field for create mode */}
       {type === "create" && (
         <input type="hidden" name="customer_id" value={selectedCustomer} />
       )}
+
+      {/* Hidden fields for valid pricing items only */}
+      {validPricingItems.map((item, validIndex) => (
+        <div key={`valid-item-${validIndex}`}>
+          <input
+            type="hidden"
+            name={`pricing_items[${validIndex}].product_id`}
+            value={item.product_id}
+          />
+          <input
+            type="hidden"
+            name={`pricing_items[${validIndex}].custom_price`}
+            value={item.custom_price}
+          />
+          {item.id && (
+            <input
+              type="hidden"
+              name={`pricing_items[${validIndex}].id`}
+              value={item.id}
+            />
+          )}
+        </div>
+      ))}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -304,29 +294,36 @@ export default function FormCustomerPricing({
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Pricing Code Field */}
-          <div className="space-y-2">
-            <Label htmlFor="code">
-              Pricing Code <span className="text-red-600">*</span>
-            </Label>
-            <Input
-              id="code"
-              name={type === "create" ? "code" : "display_code"}
-              type="text"
-              placeholder="e.g., PRC-001"
-              required={type === "create"}
-              value={pricingCode}
-              onChange={(e) => setPricingCode(e.target.value)}
-              disabled={type === "update"}
-            />
-            <p className="text-xs text-gray-500">
-              {type === "update"
-                ? "Pricing code cannot be changed for existing pricing"
-                : "Unique identifier for the custom pricing"}
-            </p>
-          </div>
+        {/* Customer validation alert */}
+        {type === "create" && !selectedCustomer && (
+          <Alert
+            variant="default"
+            className="border-yellow-200 bg-yellow-50 text-yellow-800"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Please select a customer to continue setting up custom pricing.
+            </AlertDescription>
+          </Alert>
+        )}
 
+        {/* Empty items validation alert */}
+        {emptyItemsCount > 0 && (
+          <Alert
+            variant="default"
+            className="border-yellow-200 bg-yellow-50 text-yellow-800"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {emptyItemsCount} empty product item
+              {emptyItemsCount > 1 ? "s" : ""} will be ignored when saving the
+              pricing. Only {validPricingItems.length} valid item
+              {validPricingItems.length !== 1 ? "s" : ""} will be saved.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="grid grid-cols-1 gap-4">
           {/* Customer Field */}
           <div className="space-y-2 w-full">
             <Label htmlFor="customer_id">
@@ -420,7 +417,6 @@ export default function FormCustomerPricing({
                     Product <span className="text-red-600">*</span>
                   </Label>
                   <Select
-                    name={`pricing_items[${index}].product_id`}
                     value={item.product_id.toString()}
                     onValueChange={(value) => handleProductSelect(index, value)}
                   >
@@ -454,19 +450,7 @@ export default function FormCustomerPricing({
                     value={item.formattedPrice}
                     onChange={(e) => handlePriceChange(index, e.target.value)}
                   />
-                  <input
-                    type="hidden"
-                    name={`pricing_items[${index}].custom_price`}
-                    value={item.custom_price}
-                  />
-                  {/* Hidden input for existing record ID */}
-                  {item.id && (
-                    <input
-                      type="hidden"
-                      name={`pricing_items[${index}].id`}
-                      value={item.id}
-                    />
-                  )}
+
                   <p className="text-xs text-gray-500">
                     Special price for this customer
                   </p>
@@ -476,17 +460,6 @@ export default function FormCustomerPricing({
           ))}
         </div>
 
-        {/* Total Section */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              Total Custom Pricing:
-            </span>
-            <span className="text-lg font-bold text-blue-900 dark:text-blue-100">
-              {formatToRupiah(totalAmount.toString())}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Actions */}
@@ -494,7 +467,10 @@ export default function FormCustomerPricing({
         <Link href="/dashboard/pricing">
           <Button variant="outline">Cancel</Button>
         </Link>
-        <SubmitButton />
+        <SubmitButton
+          validItemsCount={validPricingItems.length}
+          selectedCustomer={selectedCustomer}
+        />
       </div>
     </form>
   );

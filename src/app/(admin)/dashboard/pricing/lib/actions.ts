@@ -1,9 +1,6 @@
 "use server";
 
-import {
-  customProductPricingSchema,
-  singleCustomProductPricingSchema,
-} from "@/lib/schema";
+import { singleCustomProductPricingSchema } from "@/lib/schema";
 import { ActionResult } from "@/types";
 import { redirect } from "next/navigation";
 import prisma from "../../../../../../lib/prisma";
@@ -133,46 +130,95 @@ export async function postCustomProductPricing(
         formData.get(`pricing_items[${index}].custom_price`)
       );
 
-      if (productId && customPrice >= 0) {
+      // Enhanced validation: ensure all values are valid
+      if (
+        productId > 0 && // Product must be selected
+        customPrice >= 0 && // Price must be non-negative
+        !isNaN(productId) && // Must be valid numbers
+        !isNaN(customPrice)
+      ) {
         productItems.push({
           product_id: productId,
           custom_price: customPrice,
+        });
+      } else {
+        console.log(`Skipping invalid pricing item at index ${index}:`, {
+          productId,
+          customPrice,
         });
       }
       index++;
     }
 
-    const validate = customProductPricingSchema.safeParse({
-      code: formData.get("code"),
-      customer_id: Number(formData.get("customer_id")),
-      product_items: productItems,
-    });
+    const customerId = Number(formData.get("customer_id"));
 
-    if (!validate.success) {
+    // Customer validation
+    if (!customerId || customerId <= 0) {
+      return { error: "Customer is required" };
+    }
+
+    // Product items validation
+    if (productItems.length === 0) {
       return {
-        error: validate.error.errors[0]?.message ?? "Validation failed",
+        error:
+          "At least one valid product item is required. Please select products and set prices for all items.",
       };
     }
 
-    // Check if the code already exists
-    const existingCustomProductPricing =
-      await prisma.customProductPricing.findFirst({
+    // Auto-generate unique pricing codes
+    const generateUniquePricingCodes = async (
+      count: number
+    ): Promise<string[]> => {
+      const codes = [];
+
+      // Find the highest existing PRC number
+      const lastPricingCode = await prisma.customProductPricing.findFirst({
         where: {
-          code: validate.data.code,
+          code: {
+            startsWith: "PRC-",
+          },
           deleted_at: null,
+        },
+        orderBy: {
+          code: "desc",
+        },
+        select: {
+          code: true,
         },
       });
 
-    if (existingCustomProductPricing) {
-      return { error: "Code already exists" };
-    }
+      let startNumber = 1;
+      if (lastPricingCode) {
+        // Extract number from code like "PRC-001" -> get the number after PRC-
+        const codeMatch = lastPricingCode.code.match(/^PRC-(\d+)$/);
+        if (codeMatch && codeMatch[1]) {
+          startNumber = parseInt(codeMatch[1]) + 1;
+        }
+      }
 
-    // Create multiple custom product pricings
-    const createPromises = validate.data.product_items.map((item, index) =>
+      // Generate codes for the number of products
+      for (let i = 0; i < count; i++) {
+        const currentNumber = startNumber + i;
+        const formattedNumber = currentNumber.toString().padStart(3, "0");
+        codes.push(`PRC-${formattedNumber}`);
+      }
+
+      return codes;
+    };
+
+    // Generate unique codes for all products
+    const generatedCodes = await generateUniquePricingCodes(
+      productItems.length
+    );
+
+    // Create multiple custom product pricings with unique codes
+    const createPromises = productItems.map((item, index) =>
       prisma.customProductPricing.create({
         data: {
-          code: `${validate.data.code}-${index + 1}`,
-          customer_id: validate.data.customer_id,
+          code:
+            generatedCodes[index] ||
+            `PRC-${(index + 1).toString().padStart(3, "0")}`, // Format: PRC-001, PRC-002, etc.
+          customer_id: customerId,
           product_id: item.product_id,
           custom_price: item.custom_price,
         },
@@ -187,7 +233,7 @@ export async function postCustomProductPricing(
     };
   }
 
-  return redirect("/dashboard/pricing");
+  return redirect("/dashboard/pricing?created=true");
 }
 
 // Function to update a custom product pricing
@@ -237,30 +283,66 @@ export async function updateCustomProductPricing(
     };
   }
 
-  return redirect("/dashboard/pricing");
+  return redirect("/dashboard/pricing?updated=true");
 }
 
-// Function to delete a custom product pricing
-export async function deleteCustomProductPricing(
+// Function to delete ALL custom pricing for a customer
+export async function deleteCustomerPricing(
   _: unknown,
   _formData: FormData,
-  id: number
+  customerId: number
 ): Promise<ActionResult> {
-  // Try to delete the custom product pricing
   try {
-    await prisma.customProductPricing.delete({
+    // Get customer name for logging/confirmation
+    const customer = await prisma.customer.findFirst({
       where: {
-        id: id,
+        id: customerId,
+        deleted_at: null,
+      },
+      select: {
+        name: true,
+        code: true,
+      },
+    });
+
+    if (!customer) {
+      return {
+        error: "Customer not found",
+      };
+    }
+
+    // Get all custom pricing records for this customer
+    const existingPricings = await prisma.customProductPricing.findMany({
+      where: {
+        customer_id: customerId,
+        deleted_at: null,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingPricings.length === 0) {
+      return {
+        error: "No custom pricing found for this customer",
+      };
+    }
+
+    // Delete all custom pricing records for this customer
+    await prisma.customProductPricing.deleteMany({
+      where: {
+        customer_id: customerId,
+        deleted_at: null,
       },
     });
   } catch (error) {
     console.log(error);
     return {
-      error: "Failed to delete custom product pricing",
+      error: "Failed to delete customer pricing",
     };
   }
 
-  return redirect(`/dashboard/pricing`);
+  return redirect(`/dashboard/pricing?deleted=true`);
 }
 
 // Function to update customer pricing (multiple products)
@@ -270,7 +352,6 @@ export async function updateCustomerPricing(
 ): Promise<ActionResult> {
   try {
     const customerId = Number(formData.get("customer_data_id"));
-    const pricingCode = formData.get("pricing_code") as string;
 
     // Parse pricing items from form data
     const pricingItems = [];
@@ -326,29 +407,52 @@ export async function updateCustomerPricing(
     // Execute deletions first
     await Promise.all(deletePromises);
 
-    // Get all existing codes to avoid conflicts when creating new records
-    const allExistingCodes = await prisma.customProductPricing.findMany({
-      where: {
-        code: {
-          startsWith: pricingCode + "-",
+    // Auto-generate unique pricing codes for new items
+    const generateUniquePricingCodes = async (
+      count: number
+    ): Promise<string[]> => {
+      const codes = [];
+
+      // Find the highest existing PRC number
+      const lastPricingCode = await prisma.customProductPricing.findFirst({
+        where: {
+          code: {
+            startsWith: "PRC-",
+          },
+          deleted_at: null,
         },
-        deleted_at: null,
-      },
-      select: {
-        code: true,
-      },
-    });
+        orderBy: {
+          code: "desc",
+        },
+        select: {
+          code: true,
+        },
+      });
 
-    const existingCodeNumbers = allExistingCodes
-      .map((item) => {
-        const parts = item.code.split("-");
-        const lastPart = parts[parts.length - 1];
-        return parseInt(lastPart || "0");
-      })
-      .filter((num) => num > 0);
+      let startNumber = 1;
+      if (lastPricingCode) {
+        // Extract number from code like "PRC-001" -> get the number after PRC-
+        const codeMatch = lastPricingCode.code.match(/^PRC-(\d+)$/);
+        if (codeMatch && codeMatch[1]) {
+          startNumber = parseInt(codeMatch[1]) + 1;
+        }
+      }
 
-    let nextCodeNumber =
-      existingCodeNumbers.length > 0 ? Math.max(...existingCodeNumbers) + 1 : 1;
+      // Generate codes for the number of products
+      for (let i = 0; i < count; i++) {
+        const currentNumber = startNumber + i;
+        const formattedNumber = currentNumber.toString().padStart(3, "0");
+        codes.push(`PRC-${formattedNumber}`);
+      }
+
+      return codes;
+    };
+
+    // Count items that need new codes (items without id)
+    const newItemsCount = pricingItems.filter((item) => !item.id).length;
+    const generatedCodes =
+      newItemsCount > 0 ? await generateUniquePricingCodes(newItemsCount) : [];
+    let codeIndex = 0;
 
     // Process each pricing item
     for (const item of pricingItems) {
@@ -369,14 +473,16 @@ export async function updateCustomerPricing(
         creates.push(
           prisma.customProductPricing.create({
             data: {
-              code: `${pricingCode}-${nextCodeNumber}`,
+              code:
+                generatedCodes[codeIndex] ||
+                `PRC-${(codeIndex + 1).toString().padStart(3, "0")}`, // Use generated code
               customer_id: customerId,
               product_id: item.product_id,
               custom_price: item.custom_price,
             },
           })
         );
-        nextCodeNumber++;
+        codeIndex++;
       }
     }
 
@@ -389,6 +495,5 @@ export async function updateCustomerPricing(
     };
   }
 
-  const customerId = Number(formData.get("customer_data_id"));
-  return redirect(`/dashboard/pricing/customer/${customerId}`);
+  return redirect("/dashboard/pricing?updated=true");
 }

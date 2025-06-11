@@ -4,20 +4,8 @@ import { ActionMenu } from "@/components/ui/action-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatIndonesianDate } from "@/utils/date-utils";
 import { StatusBadge } from "@/components/ui/status-badge";
-
-// Type that matches the actual data structure from getCustomersWithPricingPaginated
-type CustomerWithPricing = {
-  id: number;
-  code: string;
-  name: string;
-  phone: string;
-  status: string;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
-  custom_prices: Array<any>;
-  custom_pricing_count: number;
-};
+import { CustomerWithPricing } from "./lib/types";
+import FormDeleteCustomer from "./_components/form-delete-customer";
 
 export const columns: ColumnDef<CustomerWithPricing>[] = [
   {
@@ -67,7 +55,16 @@ export const columns: ColumnDef<CustomerWithPricing>[] = [
     cell: ({ row }) => {
       const customer = row.original;
       return (
-        <ActionMenu onView={`/dashboard/pricing/customer/${customer.id}`} />
+        <ActionMenu
+          onView={`/dashboard/pricing/customer/${customer.id}`}
+          onDelete={
+            <FormDeleteCustomer
+              customerId={customer.id}
+              customerName={customer.name}
+              pricingCount={customer.custom_pricing_count}
+            />
+          }
+        />
       );
     },
   },

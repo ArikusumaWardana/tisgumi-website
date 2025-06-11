@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/ui/search-form";
 import { columns } from "./columns";
 import { getCustomersWithPricingPaginated } from "./lib/data";
+import { PricingSuccessAlert } from "./_components/success-alert";
 import Link from "next/link";
+import { Suspense } from "react";
 
 interface PricingPageProps {
   searchParams: Promise<{
@@ -82,6 +84,11 @@ export default async function PricingPage({ searchParams }: PricingPageProps) {
           href: "/dashboard/pricing/create",
         }}
       />
+
+      {/* Success Alert */}
+      <Suspense>
+        <PricingSuccessAlert />
+      </Suspense>
 
       <div className="space-y-4">
         {/* Search bar with button and loading */}

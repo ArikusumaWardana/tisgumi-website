@@ -47,23 +47,23 @@ export async function getCustomerProductPrice(
     // Optimized query: get custom pricing and product in parallel
     const [customPricing, product] = await Promise.all([
       prisma.customProductPricing.findFirst({
-        where: {
-          customer_id: customerId,
-          product_id: productId,
-          deleted_at: null,
-        },
+      where: {
+        customer_id: customerId,
+        product_id: productId,
+        deleted_at: null,
+      },
         select: {
           custom_price: true,
         },
       }),
       prisma.product.findFirst({
-        where: {
-          id: productId,
-          deleted_at: null,
-        },
-        select: {
-          default_price: true,
-        },
+      where: {
+        id: productId,
+        deleted_at: null,
+      },
+      select: {
+        default_price: true,
+      },
       }),
     ]);
 
