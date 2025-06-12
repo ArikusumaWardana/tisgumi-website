@@ -20,13 +20,6 @@ interface WhatsAppActionsProps {
 
 const WAREHOUSE_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_WAREHOUSE_NUMBER || ""; // Nomor gudang
 
-// Debug logging
-console.log("WAREHOUSE_PHONE:", WAREHOUSE_PHONE);
-console.log(
-  "All NEXT_PUBLIC env vars:",
-  Object.keys(process.env).filter((key) => key.startsWith("NEXT_PUBLIC_"))
-);
-
 export function WhatsAppActions({
   orderId,
   customerPhone,
