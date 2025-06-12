@@ -18,8 +18,14 @@ interface WhatsAppActionsProps {
   orderCode: string;
 }
 
-// Warehouse WhatsApp number (you can move this to environment variables later)
-const WAREHOUSE_PHONE = "6285339307788"; // Nomor gudang
+const WAREHOUSE_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_WAREHOUSE_NUMBER || ""; // Nomor gudang
+
+// Debug logging
+console.log("WAREHOUSE_PHONE:", WAREHOUSE_PHONE);
+console.log(
+  "All NEXT_PUBLIC env vars:",
+  Object.keys(process.env).filter((key) => key.startsWith("NEXT_PUBLIC_"))
+);
 
 export function WhatsAppActions({
   orderId,
@@ -30,6 +36,27 @@ export function WhatsAppActions({
   const { toast } = useToast();
 
   const generateAndSendInvoice = async (showPrice: boolean, phone: string) => {
+    // Check if warehouse phone is configured when sending to warehouse
+    if (!showPrice && !WAREHOUSE_PHONE) {
+      toast({
+        title: "Configuration Error",
+        description:
+          "Warehouse phone number is not configured. Please contact administrator.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if customer phone is provided when sending to customer
+    if (showPrice && !phone) {
+      toast({
+        title: "Phone Number Error",
+        description: "Customer phone number is not available.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
@@ -112,9 +139,15 @@ export function WhatsAppActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={sendToWarehouse} disabled={isGenerating}>
+        <DropdownMenuItem
+          onClick={sendToWarehouse}
+          disabled={isGenerating || !WAREHOUSE_PHONE}
+        >
           <Package className="w-4 h-4 mr-2" />
           Send to Warehouse (No Price)
+          {!WAREHOUSE_PHONE && (
+            <span className="ml-2 text-xs text-red-500">(Not configured)</span>
+          )}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={sendToCustomer} disabled={isGenerating}>
           <MessageSquare className="w-4 h-4 mr-2" />
