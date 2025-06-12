@@ -51,6 +51,39 @@ const styles = StyleSheet.create({
   companyInfoContainer: {
     marginTop: 5,
   },
+  // Address list styles
+  addressContainer: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  addressTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#666",
+    marginBottom: 5,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  addressList: {
+    flexDirection: "column",
+  },
+  addressItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 3,
+  },
+  addressBullet: {
+    fontSize: 8,
+    color: "#666",
+    marginRight: 6,
+    marginTop: 1,
+  },
+  addressText: {
+    fontSize: 9,
+    color: "#666",
+    lineHeight: 1.3,
+    flex: 1,
+  },
   invoiceTitle: {
     fontSize: 32,
     fontWeight: "bold",
@@ -296,23 +329,41 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
                 Authentic Indonesian Restaurant
               </Text>
               <View style={styles.companyInfoContainer}>
+                {/* Address Section */}
+                <View style={styles.addressContainer}>
+                  <Text style={styles.addressTitle}>Our Locations:</Text>
+                  <View style={styles.addressList}>
+                    <View style={styles.addressItem}>
+                      <Text style={styles.addressBullet}>•</Text>
+                      <Text style={styles.addressText}>
+                        Jl. Gatot Subroto Tim., Tonja, Kec. Denpasar Utara, Kota
+                        Denpasar, Bali
+                      </Text>
+                    </View>
+                    <View style={styles.addressItem}>
+                      <Text style={styles.addressBullet}>•</Text>
+                      <Text style={styles.addressText}>
+                        Jl. Hasanuddin No.30, Dauh Puri Kangin, Kec. Denpasar
+                        Bar., Kota Denpasar, Bali
+                      </Text>
+                    </View>
+                    <View style={styles.addressItem}>
+                      <Text style={styles.addressBullet}>•</Text>
+                      <Text style={styles.addressText}>
+                        Jl. Kartika Plaza, Kuta, Kec. Kuta, Kabupaten Badung,
+                        Bali
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Contact Information */}
                 <Text style={styles.companyInfo}>
-                  Jl. Gatot Subroto Tim., Tonja, Kec. Denpasar Utara, Kota
-                  Denpasar, Bali
+                  +6285 5807 0605 | Instagram: @tisgumi
                 </Text>
+                <Text style={styles.companyInfo}>www.tisgumi.vercel.app</Text>
                 <Text style={styles.companyInfo}>
-                  Jl. Hasanuddin No.30, Dauh Puri Kangin, Kec. Denpasar Bar.,
-                  Kota Denpasar, Bali
-                </Text>
-                <Text style={styles.companyInfo}>
-                  Jl. Kartika Plaza, Kuta, Kec. Kuta, Kabupaten Badung, Bali
-                </Text>
-                <Text style={styles.companyInfo}>
-                  +62 21 1234 5678 | info@tisgumi.com
-                </Text>
-                <Text style={styles.companyInfo}> www.tisgumi.com</Text>
-                <Text style={styles.companyInfo}>
-                  Open Daily: 10:00 AM - 10:00 PM
+                  Open Daily: 10:00 AM - 22:00 PM
                 </Text>
               </View>
             </View>
@@ -364,9 +415,9 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({
               <Text style={styles.infoText}>Tisgumi Company</Text>
               <Text style={styles.infoText}>Bank: Bank Central Asia (BCA)</Text>
               <Text style={styles.infoText}>
-                Account Name: Tisgumi Restaurant
+                Account Name: Yanti
               </Text>
-              <Text style={styles.infoText}>Account No: 1234 5678 9012</Text>
+              <Text style={styles.infoText}>Account No: 1271 2410 50</Text>
             </View>
           </View>
         </View>
