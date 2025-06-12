@@ -29,11 +29,7 @@ export function WhatsAppActions({
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const generateAndSendInvoice = async (
-    showPrice: boolean,
-    phone: string,
-    recipientType: string
-  ) => {
+  const generateAndSendInvoice = async (showPrice: boolean, phone: string) => {
     setIsGenerating(true);
 
     try {
@@ -56,13 +52,17 @@ export function WhatsAppActions({
 
       if (data.success && data.downloadUrl) {
         // Create WhatsApp message
-        const invoiceType = showPrice ? "with prices" : "without prices";
-        const recipient = showPrice ? "Customer" : "Warehouse";
+        const recipientType = showPrice ? "Customer" : "Warehouse";
+        const timestamp = new Date().toISOString().split("T")[0];
+        const invoiceFileName = `invoice-${timestamp}-${
+          showPrice ? "customer" : "warehouse"
+        }.pdf`;
 
         const message = encodeURIComponent(
-          `Halo *${recipient}*!\n\n` +
+          `Halo *${recipientType}*!\n\n` +
             `Kami dari *Tisgumi* memberitahukan bahwa invoice untuk order atas nama *${customerName}* telah siap.\n\n` +
-            `Silakan lihat invoice melalui link berikut:\n${data.downloadUrl}\n\n` +
+            `Silakan lihat invoice melalui link berikut:\n${data.downloadUrl}\n` +
+            `Nama file: ${invoiceFileName}\n\n` +
             `Terima kasih!`
         );
 
@@ -72,7 +72,7 @@ export function WhatsAppActions({
 
         toast({
           title: "Invoice Generated",
-          description: `Invoice ${invoiceType} has been generated and WhatsApp opened for ${recipientType}.`,
+          description: `Invoice for ${recipientType} has been generated and WhatsApp opened.`,
         });
       } else {
         throw new Error("Failed to generate invoice");
@@ -90,13 +90,13 @@ export function WhatsAppActions({
   };
 
   const sendToWarehouse = () => {
-    generateAndSendInvoice(false, WAREHOUSE_PHONE, "warehouse");
+    generateAndSendInvoice(false, WAREHOUSE_PHONE);
   };
 
   const sendToCustomer = () => {
     // Clean phone number (remove + if exists)
     const cleanPhone = customerPhone.replace(/^\+/, "");
-    generateAndSendInvoice(true, cleanPhone, "customer");
+    generateAndSendInvoice(true, cleanPhone);
   };
 
   return (

@@ -120,8 +120,9 @@ export async function POST(request: NextRequest, { params }: Context) {
 
     // Generate professional filename
     const timestamp = new Date().toISOString().split("T")[0];
-    // Use shorter, cleaner filename format
-    const filename = `tisgumi-invoice-${order.code}-${timestamp}.pdf`;
+    // Use shorter, cleaner filename format with customer/warehouse differentiation
+    const recipientType = showPrices ? "customer" : "warehouse";
+    const filename = `invoice-${timestamp}-${recipientType}.pdf`;
 
     console.log("Uploading to Supabase bucket 'invoices':", filename);
     console.log("PDF buffer size for upload:", pdfBuffer.length);
