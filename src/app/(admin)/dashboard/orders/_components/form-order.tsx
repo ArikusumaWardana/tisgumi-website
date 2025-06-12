@@ -257,6 +257,7 @@ export default function FormOrder() {
         product_id: productIdNum,
         price: finalPrice,
         isCustomPrice: isCustomPrice,
+        quantity: 1, // Reset quantity to 1 when product changes
       };
       setOrderItems(updatedItems);
     } else if (selectedProduct) {
@@ -273,6 +274,7 @@ export default function FormOrder() {
         product_id: productIdNum,
         price: selectedProduct.default_price || 0,
         isCustomPrice: false,
+        quantity: 1, // Reset quantity to 1 when product changes
       };
       setOrderItems(updatedItems);
     }
@@ -598,8 +600,16 @@ export default function FormOrder() {
                         id={`quantity-${index}`}
                         type="number"
                         min="1"
-                        placeholder="1"
+                        placeholder={
+                          item.product_id === 0 ? "Select product first" : "1"
+                        }
                         value={item.quantity || ""}
+                        disabled={item.product_id === 0 || item.price === 0}
+                        className={
+                          item.product_id === 0 || item.price === 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }
                         onChange={(e) =>
                           updateOrderItem(
                             index,
@@ -608,6 +618,11 @@ export default function FormOrder() {
                           )
                         }
                       />
+                      {(item.product_id === 0 || item.price === 0) && (
+                        <p className="text-xs text-gray-500">
+                          Select a product first to enable quantity input
+                        </p>
+                      )}
                     </div>
 
                     {/* Price Display */}
