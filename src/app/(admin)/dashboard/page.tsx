@@ -5,9 +5,8 @@ import {
   Users,
   ShoppingBag,
   DollarSign,
-  ArrowUpRight,
-  ArrowDownRight,
   ChevronRight,
+  Package,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -99,29 +98,21 @@ export default function DashboardPage() {
     {
       title: "Total Revenue",
       value: stats ? formatCurrency(stats.totalRevenue) : "Rp 0",
-      change: "+12.5%",
-      trend: "up" as const,
       icon: DollarSign,
     },
     {
       title: "Total Orders",
       value: stats ? stats.totalOrders.toString() : "0",
-      change: "+8.2%",
-      trend: "up" as const,
       icon: ShoppingBag,
     },
     {
       title: "Total Customers",
       value: stats ? stats.totalCustomers.toString() : "0",
-      change: "+5.3%",
-      trend: "up" as const,
       icon: Users,
     },
     {
       title: "Average Order Value",
       value: stats ? formatCurrency(stats.averageOrderValue) : "Rp 0",
-      change: "-2.4%",
-      trend: "down" as const,
       icon: TrendingUp,
     },
   ];
@@ -131,7 +122,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Loading Dashboard... 📊
+            Loading Dashboard...  
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Please wait while we fetch your data.
@@ -164,18 +155,6 @@ export default function DashboardPage() {
               <div className="p-2 rounded-md bg-[#8e8e4b]/10">
                 <stat.icon className="w-6 h-6 text-[#0f7243]" />
               </div>
-              <span
-                className={`flex items-center gap-1 text-sm font-medium ${
-                  stat.trend === "up" ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {stat.trend === "up" ? (
-                  <ArrowUpRight className="w-4 h-4" />
-                ) : (
-                  <ArrowDownRight className="w-4 h-4" />
-                )}
-                {stat.change}
-              </span>
             </div>
             <h3 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
               {stat.value}
@@ -257,13 +236,17 @@ export default function DashboardPage() {
           <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
             Quick Actions
           </h3>
-          <div className="space-y-3">
-            <button className="w-full px-4 py-2 text-sm font-medium text-white bg-[#0f7243] hover:bg-[#0f7243]/90 rounded-lg transition-colors">
-              Create New Order
-            </button>
-            <button className="w-full px-4 py-2 text-sm font-medium text-[#0f7243] bg-[#0f7243]/10 hover:bg-[#0f7243]/20 rounded-lg transition-colors">
-              Add New Product
-            </button>
+          <div className="space-y-3 flex flex-col">
+            <Link href="/dashboard/orders">
+              <button className="w-full px-4 py-2 text-sm font-medium text-white bg-[#0f7243] hover:bg-[#0f7243]/90 rounded-lg transition-colors">
+                Create New Order
+              </button>
+            </Link>
+            <Link href="/dashboard/products/create  ">
+              <button className="w-full px-4 py-2 text-sm font-medium text-[#0f7243] bg-[#0f7243]/10 hover:bg-[#0f7243]/20 rounded-lg transition-colors">
+                Add New Product
+              </button>
+            </Link>
           </div>
         </div>
 
@@ -279,7 +262,9 @@ export default function DashboardPage() {
                   className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-gray-600"></div>
+                    <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                      <Package className="text-[#0f7243]" />
+                    </div>
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-white">
                         {product.name}

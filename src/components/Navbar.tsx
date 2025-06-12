@@ -114,9 +114,9 @@ export default function Navbar() {
           <Button
             className="bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-white font-md px-8 py-4 rounded-md shadow font-poppins uppercase text-lg"
             size="lg"
-            onClick={() => router.push("https://wa.me/+6285339307788")}
+            onClick={() => router.push("/login")}
           >
-            Contact Us
+            Login Tisgumi
           </Button>
         </div>
       </div>
