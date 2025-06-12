@@ -22,7 +22,21 @@ export const metadata: Metadata = {
   icons: {
     icon: "/tisgumi-logo.webp",
   },
-  
+  openGraph: {
+    title: "Tisgumi",
+    description:
+      "Tisgumi - Quick-serve culinary business in Denpasar, Bali offering affordable and practical meals",
+    url: "https://tisgumi.vercel.app",
+    images: [
+      {
+        url: "/tisgumi-logo.webp",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: "id_ID",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
