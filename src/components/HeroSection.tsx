@@ -32,7 +32,7 @@ export default function HeroSection() {
             variant="ghost"
             className="text-white font-semibold px-8 py-3 rounded-md hover:text-[#decb94] hover:bg-transparent font-poppins uppercase"
             size="lg"
-            onClick={() => router.push("https://wa.me/+6285339307788")}
+            onClick={() => router.push("https://wa.me/628558070605")}
           >
             Contact Us
           </Button>

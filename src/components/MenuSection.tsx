@@ -4,52 +4,162 @@ import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import SubtitleWithLine from "@/components/ui/subtitleWithLine";
+import Link from "next/link";
 
 const menuData = [
   {
     id: 1,
-    name: "Raspberry French Toast",
+    name: "Samosa Ayam",
     type: "food",
     img: "/background.webp",
-    desc: "Sweet, Fruity, Toast",
-    price: 32000,
-    oldPrice: 40000,
+    desc: "Spicy, Savory, Crispy",
   },
   {
     id: 2,
-    name: "Classic Burger & Fries",
+    name: "Cheese Naan",
     type: "food",
     img: "/background.webp",
-    desc: "Juicy, Savory, Crispy",
-    price: 35000,
-    oldPrice: 42000,
+    desc: "Cheesy, Fluffy, Warm",
   },
   {
     id: 3,
-    name: "Veggie Salad Bowl",
+    name: "Roti Canai Cokelat",
     type: "food",
     img: "/background.webp",
-    desc: "Fresh, Healthy, Green",
-    price: 28000,
-    oldPrice: 35000,
+    desc: "Sweet, Crispy, Fluffy",
   },
   {
     id: 4,
-    name: "Iced Coffee Latte",
-    type: "drink",
+    name: "Roti Canai Cokelat Keju",
+    type: "food",
     img: "/background.webp",
-    desc: "Cold, Creamy, Coffee",
-    price: 18000,
-    oldPrice: 22000,
+    desc: "Sweet, Creamy, Cheesy",
   },
   {
     id: 5,
-    name: "Fresh Orange Juice",
+    name: "Ayam Geprek",
+    type: "food",
+    img: "/background.webp",
+    desc: "Spicy, Savory, Crispy",
+  },
+  {
+    id: 6,
+    name: "Dimsum",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Crispy, Fluffy",
+  },
+  {
+    id: 7,
+    name: "Pisang Goreng Cokelat Keju",
+    type: "food",
+    img: "/background.webp",
+    desc: "Sweet, Creamy, Cheesy",
+  },
+  {
+    id: 8,
+    name: "Tahu Crispy",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Crispy, Fluffy",
+  },
+  {
+    id: 9,
+    name: "Nasi Goreng Ayam Kalasan",
+    type: "food",
+    img: "/background.webp",
+    desc: "Spicy, Savory, Crispy",
+  },
+  {
+    id: 10,
+    name: "Nasi Goreng Ayam Rica",
+    type: "food",
+    img: "/background.webp",
+    desc: "Spicy, Savory, Crispy",
+  },
+  {
+    id: 11,
+    name: "Nasi Goreng Sambal Cumi",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Spicy, Crispy",
+  },
+  {
+    id: 12,
+    name: "Nasi Telor Crispy",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Crispy, Fluffy",
+  },
+  {
+    id: 13,
+    name: "Indomie Goreng Telor",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Crispy, Spicy",
+  },
+  {
+    id: 14,
+    name: "Indomie Kuah Telor",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Creamy, Spicy",
+  },
+  {
+    id: 15,
+    name: "Indomie Goreng Oriental",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Creamy, Spicy",
+  },
+  {
+    id: 16,
+    name: "Indomie Kuah Oriental",
+    type: "food",
+    img: "/background.webp",
+    desc: "Savory, Creamy, Spicy",
+  },
+  {
+    id: 17,
+    name: "Teh Tarik",
     type: "drink",
     img: "/background.webp",
-    desc: "Fresh, Citrus, Cool",
-    price: 15000,
-    oldPrice: 18000,
+    desc: "Creamy, Sweet, Refreshing",
+  },
+  {
+    id: 18,
+    name: "Taro Tarik",
+    type: "drink",
+    img: "/background.webp",
+    desc: "Creamy, Sweet, Refreshing",
+  },
+  {
+    id: 19,
+    name: "Green Tea Tarik",
+    type: "drink",
+    img: "/background.webp",
+    desc: "Creamy, Sweet, Refreshing",
+  },
+  {
+    id: 20,
+    name: "Milo Tarik",
+    type: "drink",
+    img: "/background.webp",
+    desc: "Creamy, Sweet, Refreshing",
+  },
+  {
+    id: 21,
+    name: "Kopi Tarik",
+    type: "drink",
+    img: "/background.webp",
+    desc: "Creamy, Sweet, Refreshing",
+  },
+  {
+    id: 22,
+    name: "Cokelat Tarik",
+    type: "drink",
+    img: "/background.webp",
+    desc: "Creamy, Sweet, Refreshing",
   },
 ];
 
@@ -58,10 +168,6 @@ const tabs = [
   { label: "Food", value: "food" },
   { label: "Drink", value: "drink" },
 ];
-
-function formatRupiah(num: number) {
-  return `Rp${num.toLocaleString("id-ID")}`;
-}
 
 export default function MenuSection() {
   const [activeTab, setActiveTab] = useState("all");
@@ -73,12 +179,20 @@ export default function MenuSection() {
   return (
     <section className="w-full max-w-6xl mx-auto py-20 px-4" id="menu">
       <div className="flex flex-col items-center text-center mb-12">
-        <SubtitleWithLine position="items-center" className="text-md text-white">Menu</SubtitleWithLine>
+        <SubtitleWithLine
+          position="items-center"
+          className="text-md text-white"
+        >
+          Menu
+        </SubtitleWithLine>
         <h2 className="text-3xl md:text-4xl font-bold text-white font-poppins mb-4 md:mt-4">
           Explore Our Foods
         </h2>
         <p className="text-white/70 max-w-2xl font-poppins mb-6">
-          Discover the authentic taste of our dishes, crafted with passion and fresh ingredients. Our menu offers a delightful variety that caters to every palate, ensuring a memorable dining experience. Join us and savor the flavors that make us unique.
+          Discover the authentic taste of our dishes, crafted with passion and
+          fresh ingredients. Our menu offers a delightful variety that caters to
+          every palate, ensuring a memorable dining experience. Join us and
+          savor the flavors that make us unique.
         </p>
         <div className="flex gap-4 mb-4">
           {tabs.map((tab) => (
@@ -116,21 +230,15 @@ export default function MenuSection() {
               <h3 className="text-lg font-semibold text-[#8e8e4b] font-poppins mb-1">
                 {item.name}
               </h3>
-              <p className="text-xs text-white/60 mb-2 font-poppins">
+              <p className="text-xs text-white/60 mb-5 font-poppins">
                 {item.desc}
               </p>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-lg font-bold text-[#8e8e4b] font-poppins">
-                  {formatRupiah(item.price)}
-                </span>
-                <span className="text-base line-through text-white/40 font-poppins">
-                  {formatRupiah(item.oldPrice)}
-                </span>
-              </div>
               <div className="mt-auto">
-                <Button className="bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-black font-semibold px-4 py-2 rounded font-poppins w-fit">
-                  Order Now
-                </Button>
+                <Link href="https://wa.me/628558070605" target="_blank">
+                  <Button className="bg-[#8e8e4b] hover:bg-[#8e8e4b]/80 text-black font-semibold px-4 py-2 rounded font-poppins w-fit">
+                    Order Now
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

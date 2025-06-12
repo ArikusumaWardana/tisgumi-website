@@ -11,7 +11,7 @@ const aboutData = [
   {
     title: "Signature Dishes & Menu Variety",
     subtitle: "OUR MENU",
-    desc: "Our signature dish, Grilled Chicken with Rice, is a favorite at just Rp32,000. TISGUMI also offers a wide selection of food and beverages, including snacks, coffee, and refreshing drinks—perfect for any time of day. Enjoy our menu in-store or order conveniently through GoFood for a quick and tasty meal wherever you are.",
+    desc: "Our signature dish, Cheese Naan, is a favorite. TISGUMI also offers a wide selection of food and beverages, including snacks, tea, and refreshing drinks—perfect for any time of day. Enjoy our menu in-store or order conveniently through GoFood for a quick and tasty meal wherever you are.",
     img: "/background.webp",
   },
   {

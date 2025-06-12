@@ -11,7 +11,7 @@ const testimonials = [
   },
   {
     text: "Kami pesan canai susu, donuts tepung gula, dan teh tarik.. ini sudah datang kedua kalinya disini. Rasanya original dan suasana juga cozy.",
-    rating: 4,
+    rating: 5,
     name: "William Halim",
     role: "Customer",
     color: "#ef4444", // red

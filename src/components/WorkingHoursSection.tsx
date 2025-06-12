@@ -37,7 +37,7 @@ export default function WorkingHoursSection() {
             </Button>
             <button
               className="text-white font-poppins hover:text-[#8e8e4b] transition uppercase"
-              onClick={() => router.push("https://wa.me/+6285339307788")}
+              onClick={() => router.push("https://wa.me/628558070605")}
             >
               Contact Us
             </button>
@@ -48,15 +48,9 @@ export default function WorkingHoursSection() {
           <div className="bg-[#151c1d] shadow-lg px-8 py-12 min-w-[270px] max-w-xs w-full text-white font-poppins text-center space-y-16 min-h-[320px] md:min-h-[320px] flex flex-col justify-center">
             <div>
               <span className="block text-lg font-semibold mb-1">
-                Sunday to Tuesday
+                Sunday to Saturday
               </span>
-              <span className="block text-sm">09:30 AM – 21:30 PM</span>
-            </div>
-            <div>
-              <span className="block text-lg font-semibold mb-1">
-                Friday to Saturday
-              </span>
-              <span className="block text-sm">09:30 AM – 21:30 PM</span>
+              <span className="block text-sm">10:00 AM – 22:00 PM</span>
             </div>
           </div>
         </div>

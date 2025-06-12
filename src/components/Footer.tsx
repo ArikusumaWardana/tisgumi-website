@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import {
   Facebook,
-  Twitter,
   Instagram,
   Store,
   MapPin,
@@ -15,7 +14,6 @@ const socialLinks = [
     icon: Facebook,
     href: "https://www.facebook.com/p/Tisgumi-100084736407067/",
   },
-  { icon: Twitter, href: "#" },
   { icon: Instagram, href: "https://www.instagram.com/tisgumi/" },
   {
     icon: Store,
@@ -72,16 +70,12 @@ export default function Footer() {
             Opening Restaurant
           </span>
           <span className="text-white/70 text-sm">
-            Sa – We: 09:00am - 10:00pm
+            Sunday – Saturday: 10:00 AM - 22:00 PM
           </span>
-          <span className="text-white/70 text-sm">
-            Thu – We: 09:00am - 10:00pm
-          </span>
-          <span className="text-white/70 text-sm">Friday Closed</span>
         </div>
         {/* User Link */}
         <div className="flex flex-col gap-2">
-          <span className="text-lg font-bold mb-2 font-poppins">User Link</span>
+          <span className="text-lg font-bold mb-2 font-poppins">Navigations</span>
           {userLinks.map((link, i) => (
             <Link
               key={i}
@@ -110,7 +104,7 @@ export default function Footer() {
             Puri Kangin, Kec. Denpasar Bar., Kota Denpasar, Bali
           </span>
           <span className="text-white/70 text-sm flex items-center gap-2">
-            <Phone size={16} className="shrink-0" /> +62 812-3456-7890
+            <Phone size={16} className="shrink-0" /> +6285 5807 0605
           </span>
         </div>
       </div>
