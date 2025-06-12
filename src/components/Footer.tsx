@@ -48,10 +48,9 @@ export default function Footer() {
             </span>
           </div>
           <p className="text-white/60 text-sm max-w-xs">
-            Lorem ipsum dolor sit amet consectetur. Tristique cursus morbi nibh
-            nec et vulputate. Turpis tortor nisi imperdiet quis accumsan. Ligula
-            netus amet leo ultricies. Neque venenatis magnis amet eget sagittis
-            leo enim.
+            Enjoy an unforgettable culinary experience at TISGUMI. We serve
+            delicious dishes made with fresh and quality ingredients. Discover
+            authentic flavors and a warm atmosphere at our tenants.
           </p>
           <div className="flex gap-4 mt-2">
             {socialLinks.map(({ icon: Icon, href }, i) => (

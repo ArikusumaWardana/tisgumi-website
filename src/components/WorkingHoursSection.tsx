@@ -50,13 +50,13 @@ export default function WorkingHoursSection() {
               <span className="block text-lg font-semibold mb-1">
                 Sunday to Tuesday
               </span>
-              <span className="block text-sm">09:00 AM – 10.00 PM</span>
+              <span className="block text-sm">09:30 AM – 21:30 PM</span>
             </div>
             <div>
               <span className="block text-lg font-semibold mb-1">
                 Friday to Saturday
               </span>
-              <span className="block text-sm">09:00 AM – 10.00 PM</span>
+              <span className="block text-sm">09:30 AM – 21:30 PM</span>
             </div>
           </div>
         </div>

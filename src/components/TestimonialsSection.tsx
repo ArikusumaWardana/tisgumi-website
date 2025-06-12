@@ -3,24 +3,24 @@ import SubtitleWithLine from "./ui/subtitleWithLine";
 
 const testimonials = [
   {
-    text: "Lorem ipsum dolor sit amet consectetur. Suspendisse aliquet tellus adipiscing condimentum donec blandit. Dignissim nunc facilisi pretium id molestie lectus duis.",
+    text: "Mantap banget! Makanan khas India dengan taste otentik. Cheese Naan nya mantap dengan taste keju yg mantap. Teh tariknya betul2 otentik.",
     rating: 5,
-    name: "John",
-    role: "Business Man",
+    name: "Denny Darmadji",
+    role: "Customer",
     color: "#fbbf24", // yellow
   },
   {
-    text: "Lorem ipsum dolor sit amet consectetur. Suspendisse aliquet tellus adipiscing condimentum donec blandit. Dignissim nunc facilisi pretium id molestie lectus duis.",
+    text: "Kami pesan canai susu, donuts tepung gula, dan teh tarik.. ini sudah datang kedua kalinya disini. Rasanya original dan suasana juga cozy.",
     rating: 4,
-    name: "John",
-    role: "Business Man",
+    name: "William Halim",
+    role: "Customer",
     color: "#ef4444", // red
   },
   {
-    text: "Lorem ipsum dolor sit amet consectetur. Suspendisse aliquet tellus adipiscing condimentum donec blandit. Dignissim nunc facilisi pretium id molestie lectus duis.",
+    text: "Cheese Naannya enak ada keju moza di dalamnya dan teh tarik rasanya pas dilidah tidak manis tapi creamy banget. recommended banget.",
     rating: 5,
-    name: "John",
-    role: "Business Man",
+    name: "Ivan Tjong",
+    role: "Customer",
     color: "#a21caf", // purple
   },
 ];
@@ -52,9 +52,7 @@ export default function TestimonialsSection() {
           Why people choose us?
         </h2>
         <p className="text-white/70 max-w-2xl font-poppins">
-          Lorem ipsum dolor sit amet consectetur. Dolor elit vitae nunc varius.
-          Facilisis eget cras sit semper sit enim. Turpis aliquet at ac eu donec
-          ut. Sagittis vestibulum at quis non massa netus.
+          Discover the reasons why our clients trust us. Our commitment to excellence and attention to detail ensure that every experience is exceptional. Join the community of satisfied customers who have chosen us for our reliability and quality.
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">

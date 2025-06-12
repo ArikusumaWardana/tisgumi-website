@@ -78,9 +78,7 @@ export default function MenuSection() {
           Explore Our Foods
         </h2>
         <p className="text-white/70 max-w-2xl font-poppins mb-6">
-          Lorem ipsum dolor sit amet consectetur. Dolor elit vitae nunc varius.
-          Facilisis eget cras sit semper sit enim. Turpis aliquet at ac eu donec
-          ut. Sagittis vestibulum at quis non massa netus.
+          Discover the authentic taste of our dishes, crafted with passion and fresh ingredients. Our menu offers a delightful variety that caters to every palate, ensuring a memorable dining experience. Join us and savor the flavors that make us unique.
         </p>
         <div className="flex gap-4 mb-4">
           {tabs.map((tab) => (
