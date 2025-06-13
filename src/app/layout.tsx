@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description:
     "Tisgumi adalah UMKM kuliner terpercaya di Denpasar, Bali yang menyajikan roti canai autentik, teh tarik, dan makanan India terbaik. Nikmati cheese naan, samosa, dan minuman tarik dengan delivery via GoFood. Lokasi strategis di Kartika Plaza, Gatot Subroto, dan Hasanuddin.",
   icons: {
-    icon: "/tisgumi-logo.webp",
+    icon: "/logo-tisgumi.png",
   },
   keywords: [
     "tisgumi",
