@@ -71,18 +71,12 @@ export function WhatsAppActions({
       const data = await response.json();
 
       if (data.success && data.downloadUrl) {
-        // Create WhatsApp message
         const recipientType = showPrice ? "Customer" : "Warehouse";
-        const timestamp = new Date().toISOString().split("T")[0];
-        const invoiceFileName = `invoice-${timestamp}-${
-          showPrice ? "customer" : "warehouse"
-        }.pdf`;
 
         const message = encodeURIComponent(
           `Halo *${recipientType}*!\n\n` +
             `Kami dari *Tisgumi* memberitahukan bahwa invoice untuk order atas nama *${customerName}* telah siap.\n\n` +
-            `Silakan lihat invoice melalui link berikut:\n${data.downloadUrl}\n` +
-            `Nama file: ${invoiceFileName}\n\n` +
+            `Silakan lihat invoice melalui link berikut:\n${data.downloadUrl}\n\n` +
             `Terima kasih!`
         );
 

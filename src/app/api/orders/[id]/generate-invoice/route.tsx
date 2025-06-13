@@ -118,11 +118,13 @@ export async function POST(request: NextRequest, { params }: Context) {
     console.log("PDF buffer generated, size:", pdfBuffer.length);
     console.log("Template used: InvoiceTemplate with Canvas logo design");
 
+    // Generate 3 random code for invoices filename
+    const randomCode = Math.random().toString(36).substring(2, 15);
     // Generate professional filename
     const timestamp = new Date().toISOString().split("T")[0];
     // Use shorter, cleaner filename format with customer/warehouse differentiation
     const recipientType = showPrices ? "customer" : "warehouse";
-    const filename = `invoice-${timestamp}-${recipientType}.pdf`;
+    const filename = `invoice-${timestamp}-${recipientType}-${randomCode}.pdf`;
 
     console.log("Uploading to Supabase bucket 'invoices':", filename);
     console.log("PDF buffer size for upload:", pdfBuffer.length);
