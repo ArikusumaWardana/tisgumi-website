@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Metadata } from "next";
 import LoginForm from "./_components/form";
 
@@ -36,18 +35,6 @@ export default function Login() {
         {/* Form Section */}
         <LoginForm />
 
-        {/* Register Link */}
-        <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Belum memiliki akun?{" "}
-            <Link
-              href="#"
-              className="font-medium text-[#8e8e4b] hover:text-[#8e8e4b]/80 transition-colors"
-            >
-              Buat akun
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );
