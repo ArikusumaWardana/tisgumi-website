@@ -70,7 +70,7 @@ export function InvoiceActions({ orderId }: InvoiceActionsProps) {
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-col lg:flex-row">
       <Button
         variant="outline"
         size="sm"
