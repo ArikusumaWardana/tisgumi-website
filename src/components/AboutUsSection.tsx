@@ -12,7 +12,7 @@ const aboutData = [
     title: "Signature Dishes & Menu Variety",
     subtitle: "OUR MENU",
     desc: "Our signature dish, Cheese Naan, is a favorite. TISGUMI also offers a wide selection of food and beverages, including snacks, tea, and refreshing drinks—perfect for any time of day. Enjoy our menu in-store or order conveniently through GoFood for a quick and tasty meal wherever you are.",
-    img: "/background.webp",
+    img: "/discovery-mall.jpg",
   },
   {
     title: "Meet the TISGUMI Team",
@@ -44,7 +44,7 @@ export default function AboutUsSection() {
         <div className="order-2 w-full">
           <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
             <Image
-              src="/background.webp"
+              src="/living-tisgumi.webp"
               alt="about us"
               fill
               className="object-cover"
@@ -60,7 +60,7 @@ export default function AboutUsSection() {
         <div className="order-2 md:order-1 w-full">
           <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
             <Image
-              src="/background.webp"
+              src="/discovery-mall.jpg"
               alt="our menu"
               fill
               className="object-cover"
@@ -97,7 +97,7 @@ export default function AboutUsSection() {
         <div className="order-2 w-full">
           <div className="relative w-full aspect-[4/3] md:aspect-[3/2]">
             <Image
-              src="/background.webp"
+              src="/graha-tisgumi.webp"
               alt="our team"
               fill
               className="object-cover"

@@ -11,10 +11,10 @@ export default function WorkingHoursSection() {
     <section className="relative w-full flex justify-center items-center min-h-[350px] md:min-h-[480px] py-12 px-4 overflow-hidden">
       {/* Background image */}
       <Image
-        src="/background.webp"
+        src="/graha-tisgumi.webp"
         alt="Working Hours Background"
         fill
-        className="object-cover object-center z-0"
+        className="object-cover object-top z-0"
         style={{ filter: "brightness(0.7)" }}
         priority
       />
